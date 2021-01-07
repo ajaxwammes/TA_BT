@@ -1,0 +1,7 @@
+pandas
+numpy
+requests
+pandas_datareader
+futures3
+pyarrow
+Flask
