@@ -39,6 +39,7 @@ def risk(ticker):
         df = pd.Series.to_frame(df)
         df['ret'] = np.log(df.Close / df.Close.shift(1))
         vol = df['ret'].std() * np.sqrt(RTL.days_volatility/1.4484)
-        return vol
-    except KeyError:
+    except Exception:
         print('CHECK THIS PRODUCT, POSSIBLY NO LONGER EXISTS', ticker)
+        vol = 'N/A'
+    return vol

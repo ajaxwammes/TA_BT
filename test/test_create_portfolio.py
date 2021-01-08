@@ -2,6 +2,9 @@
 Created on Sun Dec 13 23:07:01 2020
 @author: mart.vos
 
+Issues:
+- What if ther is extreme volatility, then no portfolio can be made?
+
 Input:
     1. Sustainable categories
     2. Customer ID
@@ -31,12 +34,12 @@ class TestPortfolioCreator(unittest.TestCase):
         self.all_products = pd.read_csv('./data/Portfolio2.csv')
 
         self.choices = [
-            'Renewable energy',
-            'Clean water and oceans',
-             'Circular economy',
-             'Transportation of the future',
-            'Energy-saving technology'
-        #    'Plant-based food'
+            # 'Renewable energy',
+            # 'Clean water and oceans',
+            #  'Circular economy',
+            #  'Transportation of the future',
+            # 'Energy-saving technology'
+             'Plant-based food'
         ]
 
         self.environment = pd.read_feather('./data/environment_2020_12_19.feather')
