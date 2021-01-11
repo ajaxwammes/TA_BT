@@ -134,8 +134,6 @@ class PortfolioCreator:
             Value_risk = executer.map(risk, companylist)
             for Value_risk in Value_risk:
                 self.value_risk.append(Value_risk)
-        print(len(self.value_risk))
-        print(self.value_risk)
         self.environment['Risk'] = self.value_risk
         self.environment = self.environment.dropna()
         self.environment = self.environment[pd.to_numeric(self.environment['Risk'], errors='coerce').notnull()]
