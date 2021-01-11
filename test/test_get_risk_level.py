@@ -1,23 +1,21 @@
 try:
-    from services.utils import risk_assessment
+    from services.assess_risk import RiskAssessor
 except ModuleNotFoundError as ex:
     import sys
     sys.path.append('./')
-    from services.utils import risk_assessment
+    from services.assess_risk import RiskAssessor
 
-q1_answer = '20%'
-q2_answer = 'Between 5 and 10 years'
-q3_answer = 'Pension'
-q4_answer = 'No'
+if __name__ == "__main__":
+    #INPUT
+    CustomerID = 1001
+    q1_answer = '80%'
+    q2_answer = 'Between 5 and 10 years'
+    q3_answer = 'Pension'
+    q4_answer = 'No'
 
-score_q1 = risk_assessment.q1[q1_answer]
-score_q2 = risk_assessment.q2[q2_answer]
-score_q3 = risk_assessment.q3[q3_answer]
-score_q4 = risk_assessment.q4[q4_answer]
-
-if __name__ == '__main__':
-    total_score = score_q1 + score_q2 + score_q3 + score_q4
-    res_key, res_val = min(risk_assessment.risk.items(), key=lambda x: abs(total_score - x[1]))
-    print(res_key)
-
-
+    ra_obj = RiskAssessor()
+    result = ra_obj.get_risk_level(q1_answer=q1_answer,
+                          q2_answer=q2_answer,
+                          q3_answer=q3_answer,
+                          q4_answer=q4_answer)
+    print(result)
