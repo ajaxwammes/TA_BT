@@ -15,6 +15,7 @@ from services.configs import risk_thresholds_levels as RTL
 from services.utils.utils import analyst_ratings
 from services.utils.utils import risk
 
+
 class PortfolioCreator:
 
     def __init__(self,environment):
