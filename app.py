@@ -17,7 +17,7 @@ def withdraw_deposit():
     dw_obj = DepositWithdrawer(begin_portfolio)
     result = dw_obj.run(begin_portfolio=begin_portfolio,
                         money_delta=money_delta)
-    anything.append(list(result['Value_per_stock']))
+    anything.append(list(result['Company']))
     return jsonify('')
 
 @app.route('/api/create_portfolio', methods = ['POST'])
