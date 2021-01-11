@@ -11,7 +11,7 @@ import random
 import numpy as np
 import pandas as pd
 
-from services.utils import risk_thresholds_levels as RTL
+from services.configs import risk_thresholds_levels as RTL
 from services.utils.utils import analyst_ratings
 from services.utils.utils import risk
 

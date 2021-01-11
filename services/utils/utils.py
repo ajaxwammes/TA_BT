@@ -5,7 +5,7 @@ import pandas as pd
 import pandas_datareader.data as web
 import requests
 
-from services.utils import risk_thresholds_levels as RTL
+from services.configs import risk_thresholds_levels as RTL
 
 
 def analyst_ratings(environment):

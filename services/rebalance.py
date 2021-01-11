@@ -9,7 +9,7 @@ import pandas as pd
 import numpy as np
 import random
 from services.utils.utils import analyst_ratings
-from services.utils import risk_thresholds_levels as RTL
+from services.configs import risk_thresholds_levels as RTL
 
 
 class Rebalancer:
