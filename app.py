@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import pandas as pd
 from services.create_portfolio import PortfolioCreator
 from services.withdraw_deposit import DepositWithdrawer
+from services.assess_risk import RiskAssessor
 
 
 app = Flask(__name__)
@@ -34,6 +35,23 @@ def create_portfolio():
                         all_products=all_products).reset_index(drop=True)
     anything.append(list(result['Value_per_stock']))
     return jsonify('')
+
+@app.route('/api/assess_risk', methods = ['POST'])
+def assess_risk():
+    content = request.json
+    customerID = content['customerID']
+    q1_answer = content['q1_answer']
+    q2_answer = content['q2_answer']
+    q3_answer = content['q3_answer']
+    q4_answer = content['q4_answer']
+    ra_obj = RiskAssessor()
+    result = ra_obj.get_risk_level(q1_answer=q1_answer,
+                                   q2_answer=q2_answer,
+                                   q3_answer=q3_answer,
+                                   q4_answer=q4_answer)
+    anything.append(result)
+    return jsonify('')
+
 
 @app.route('/api/show', methods = ['GET'])
 def show():
