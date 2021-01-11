@@ -7,6 +7,7 @@ import requests
 
 from services.configs import risk_thresholds_levels as RTL
 
+
 def analyst_ratings(environment):
     print('Checking analyst ratings of potential products...')
     companylist = list(environment['Ticker'])
@@ -39,6 +40,7 @@ def risk(ticker):
         df = pd.Series.to_frame(df)
         df['ret'] = np.log(df.Close / df.Close.shift(1))
         vol = df['ret'].std() * np.sqrt(RTL.days_volatility/1.4484)
-        return vol
-    except KeyError:
+    except Exception:
         print('CHECK THIS PRODUCT, POSSIBLY NO LONGER EXISTS', ticker)
+        vol = 'N/A'
+    return vol

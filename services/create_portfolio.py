@@ -128,17 +128,13 @@ class PortfolioCreator:
         self.environment = self.environment.sort_values('Risk')
 
     def risk_clean(self):
-        if 'Risk' not in self.environment.columns:
-            companylist = list(self.environment['Ticker'])
-            self.value_risk = []
-            with ThreadPoolExecutor(max_workers=10) as executer:
-                try:
-                    Value_risk = executer.map(risk, companylist)
-                    for Value_risk in Value_risk:
-                        self.value_risk.append(Value_risk)
-                except Exception:
-                    self.value_risk.append('N/A')
-            self.environment['Risk'] = self.value_risk
+        companylist = list(self.environment['Ticker'])
+        self.value_risk = []
+        with ThreadPoolExecutor(max_workers=10) as executer:
+            Value_risk = executer.map(risk, companylist)
+            for Value_risk in Value_risk:
+                self.value_risk.append(Value_risk)
+        self.environment['Risk'] = self.value_risk
         self.environment = self.environment.dropna()
         self.environment = self.environment[pd.to_numeric(self.environment['Risk'], errors='coerce').notnull()]
 
@@ -151,11 +147,7 @@ class PortfolioCreator:
 
     def portfolio_check(self,money_in_portfolio,risk_level,all_products):
         if len(self.environment) <= self.portfolio_length(money_in_portfolio)*RTL.rebalance_threshold:
-            # print('Warning: not enough financial products for capital, missing:',self.portfolio_length(money_in_portfolio) - len(self.environment))
-            # print('Add additional sustainable stocks?')
-            # # TODO delete
-            # user_input = input("Rebalance?...")
-            # if user_input == 'Yes':
+            print('Warning: not enough financial products for capital, adding:',self.portfolio_length(money_in_portfolio) - len(self.environment))
             self.add_stocks(all_products,money_in_portfolio,risk_level)
         else:
             print('Financial products check: DONE BRO')

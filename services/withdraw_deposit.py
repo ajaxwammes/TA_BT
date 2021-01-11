@@ -11,6 +11,7 @@ import random
 from services.utils.utils import analyst_ratings
 from services.configs import risk_thresholds_levels as RTL
 
+
 class DepositWithdrawer:
 
     def __init__(self, environment_org):

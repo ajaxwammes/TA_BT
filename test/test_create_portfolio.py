@@ -2,6 +2,10 @@
 Created on Sun Dec 13 23:07:01 2020
 @author: mart.vos
 
+To dos:
+- What if there is extreme volatility, then no portfolio can be made?
+- Introduce a measure to do overall risk rebalancing (again)
+
 Input:
     1. Sustainable categories
     2. Customer ID
@@ -31,12 +35,12 @@ class TestPortfolioCreator(unittest.TestCase):
         self.all_products = pd.read_csv('./data/Portfolio2.csv')
 
         self.choices = [
-            'Renewable energy',
+         #   'Renewable energy',
             'Clean water and oceans',
              'Circular economy',
              'Transportation of the future',
-            'Energy-saving technology'
-        #    'Plant-based food'
+          #  'Energy-saving technology',
+             'Plant-based food'
         ]
 
         self.environment = pd.read_feather('./data/environment_2020_12_19.feather')
@@ -44,7 +48,7 @@ class TestPortfolioCreator(unittest.TestCase):
 
         self.customerID = 1002
         self.risk_level = 2
-        self.money_in_portfolio = 4500
+        self.money_in_portfolio = 10000
 
 
     # def test_split(self):
