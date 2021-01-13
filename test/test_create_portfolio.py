@@ -5,6 +5,9 @@ Created on Sun Dec 13 23:07:01 2020
 To dos:
 - What if there is extreme volatility, then no portfolio can be made?
 - Introduce a measure to do overall risk rebalancing (again)
+#TODO
+- Set aside small amount to be able to pay ourselves the monthly fee, without having to make (extra) trades
+    - First talk to custodian
 
 Input:
     1. Sustainable categories

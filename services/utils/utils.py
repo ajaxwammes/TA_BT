@@ -32,15 +32,24 @@ def analyst_ratings(environment):
     return environment
 
 def risk(ticker):
-    start = datetime.datetime.now() - datetime.timedelta(days=RTL.days_volatility)
+    start = datetime.datetime.now() - datetime.timedelta(days=RTL.days_trend)
     end = datetime.datetime.now()
     try:
-        print("Calculating risk for",ticker)
-        df = web.DataReader(ticker, RTL.market_data_provider, start, end)['Close']
+        print("Calculating risk for", ticker)
+        df = web.DataReader(ticker, RTL.market_data_provider, start, end)
+        if df['Close'][-1] > df['Close'][0]:
+            trend = 'y'
+        else:
+            trend = 'n'
+        if df['Volume'][-1] > RTL.volatility_threshold:
+            volatility = 'y'
+        else:
+            volatility = 'n'
+        df = df['Close'].tail(RTL.days_volatility)
         df = pd.Series.to_frame(df)
         df['ret'] = np.log(df.Close / df.Close.shift(1))
-        vol = df['ret'].std() * np.sqrt(RTL.days_volatility/1.4484)
+        vol = df['ret'].std()
     except Exception:
         print('CHECK THIS PRODUCT, POSSIBLY NO LONGER EXISTS', ticker)
         vol = 'N/A'
-    return vol
+    return vol, trend, volatility
