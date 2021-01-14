@@ -102,6 +102,9 @@ class PortfolioCreator:
         elements_high = high_risk.sort_values('Risk',ascending=True).head(len_high_risk)
         
         frames = [elements_low, elements_med, elements_high]
+        #TODO
+        #if length is still not enough (crazy volatility or smt), print message or get random stocks
+
         self.environment = pd.concat(frames)
 
     def risklvl_lmh2(self,risk_level,money_in_portfolio):
@@ -135,7 +138,11 @@ class PortfolioCreator:
             Value_risk = executer.map(risk, companylist)
             for Value_risk in Value_risk:
                 self.value_risk.append(Value_risk)
-        self.environment['Risk'] = self.value_risk
+        self.environment['Non_rel'] = self.value_risk
+        self.environment['Risk'] = self.environment['Non_rel'].str[0]
+        self.environment['Trend'] = self.environment['Non_rel'].str[1]
+        self.environment['Volatility'] = self.environment['Non_rel'].str[2]
+        self.environment = self.environment.drop('Non_rel', 1)
         self.environment = self.environment.dropna()
         self.environment = self.environment[pd.to_numeric(self.environment['Risk'], errors='coerce').notnull()]
 
