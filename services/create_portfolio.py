@@ -75,9 +75,10 @@ class PortfolioCreator:
         elements_high = high_risk.sort_values('Risk',ascending=True).head(len_high_risk)
         
         frames = [elements_low, elements_med, elements_high]
+
         self.environment = pd.concat(frames)
 
-    def portfolio_lmh2(self,additional_prod,risk_level,money_in_portfolio):
+    def portfolio_lmh2(self,additional_prod,risk_level,money_in_portfolio,all_products):
         conditions = [
             (self.environment['Risk'] <= RTL.risk_threshold_l),
             (self.environment['Risk'] > RTL.risk_threshold_l) & (self.environment['Risk'] <= RTL.risk_threshold_m),
@@ -100,12 +101,27 @@ class PortfolioCreator:
         elements_low = low_risk.sort_values('Risk',ascending=True).head(len_low_risk)
         elements_med = medium_risk.sort_values('Risk',ascending=True).head(len_med_risk)
         elements_high = high_risk.sort_values('Risk',ascending=True).head(len_high_risk)
-        
-        frames = [elements_low, elements_med, elements_high]
-        #TODO
-        #if length is still not enough (crazy volatility or smt), print message or get random stocks
 
+        frames = [elements_low, elements_med, elements_high]
         self.environment = pd.concat(frames)
+
+        #check if after round 2 the portfolio is incomplete caused by e.g. extreme volatility
+        length_new_frame = elements_low + elements_med + elements_high
+        if length_new_frame < additional_prod:
+            cond = all_products['Ticker'].isin(self.environment['Ticker'])
+            self.environment = all_products.drop(all_products[cond].index)
+
+            low_missing = len_low_risk - elements_low
+            high_missing = len_high_risk - elements_high
+            if low_missing > high_missing:
+                print('extreme high volatility')
+                self.environment.sort_values('Risk', ascending=True).head(length_new_frame)
+            elif low_missing < high_missing:
+                print('extreme low volatility')
+                self.environment.sort_values('Risk', ascending=True).tail(length_new_frame)
+            else:
+                print('not enough medium stocks')
+
 
     def risklvl_lmh2(self,risk_level,money_in_portfolio):
         should_be_risk_total = RTL.risk_lvl[risk_level]
@@ -118,6 +134,7 @@ class PortfolioCreator:
         calc = (1/weight_port2) * (should_be_risk_total - (risk_port1*weight_port1))
         res_key, res_val = min(RTL.risk_lvl.items(), key=lambda x: abs(calc - x[1]))
         return res_key
+
 
     def add_stocks(self,all_products,money_in_portfolio,risk_level):
         original_environment = self.environment.copy()
