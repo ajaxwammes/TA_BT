@@ -105,6 +105,7 @@ class PortfolioCreator:
         frames = [elements_low, elements_med, elements_high]
         self.environment = pd.concat(frames)
 
+        #Check 3: only for extreme market conditions
         if len(self.environment) < additional_prod:
             print('Round 3 portfolio creation: extreme market conditions')
             cond = original_environment['Ticker'].isin(self.environment['Ticker'])
