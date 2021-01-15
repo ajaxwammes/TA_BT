@@ -78,7 +78,7 @@ class PortfolioCreator:
 
         self.environment = pd.concat(frames)
 
-    def portfolio_lmh2(self,additional_prod,risk_level,money_in_portfolio,all_products):
+    def portfolio_lmh2(self,additional_prod,risk_level,money_in_portfolio):
         conditions = [
             (self.environment['Risk'] <= RTL.risk_threshold_l),
             (self.environment['Risk'] > RTL.risk_threshold_l) & (self.environment['Risk'] <= RTL.risk_threshold_m),
@@ -88,6 +88,7 @@ class PortfolioCreator:
         
         values = ['Low', 'Medium', 'High', 'Unacceptable']
         self.environment['Tier'] = np.select(conditions, values)
+        original_environment = self.environment.copy()
         low_risk = self.environment.loc[self.environment['Tier'] == 'Low']
         medium_risk = self.environment.loc[self.environment['Tier'] == 'Medium']
         high_risk = self.environment.loc[self.environment['Tier'] == 'High']
@@ -101,26 +102,17 @@ class PortfolioCreator:
         elements_low = low_risk.sort_values('Risk',ascending=True).head(len_low_risk)
         elements_med = medium_risk.sort_values('Risk',ascending=True).head(len_med_risk)
         elements_high = high_risk.sort_values('Risk',ascending=True).head(len_high_risk)
-
         frames = [elements_low, elements_med, elements_high]
         self.environment = pd.concat(frames)
 
-        #check if after round 2 the portfolio is incomplete caused by e.g. extreme volatility
-        length_new_frame = elements_low + elements_med + elements_high
-        if length_new_frame < additional_prod:
-            cond = all_products['Ticker'].isin(self.environment['Ticker'])
-            self.environment = all_products.drop(all_products[cond].index)
-
-            low_missing = len_low_risk - elements_low
-            high_missing = len_high_risk - elements_high
-            if low_missing > high_missing:
-                print('extreme high volatility')
-                self.environment.sort_values('Risk', ascending=True).head(length_new_frame)
-            elif low_missing < high_missing:
-                print('extreme low volatility')
-                self.environment.sort_values('Risk', ascending=True).tail(length_new_frame)
-            else:
-                print('not enough medium stocks')
+        if len(self.environment) < additional_prod:
+            print('Round 3 portfolio creation: extreme market conditions')
+            cond = original_environment['Ticker'].isin(self.environment['Ticker'])
+            not_in_env = original_environment.drop(self.environment[cond].index)
+            remaining_stocks = additional_prod - len(self.environment)
+            additional_prod = not_in_env.sort_values('Risk', ascending=True).head(remaining_stocks)
+            frames = [additional_prod, self.environment]
+            self.environment = pd.concat(frames)
 
 
     def risklvl_lmh2(self,risk_level,money_in_portfolio):
