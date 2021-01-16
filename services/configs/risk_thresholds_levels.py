@@ -29,7 +29,7 @@ risk_lvl = {0: (risk_based_allocation[0][0]*LR+risk_based_allocation[0][1]*MR+ri
 #thresholds for individual stock risk allocation into low, medium or high
 risk_threshold_l = 0.033
 risk_threshold_m = 0.048
-risk_threshold_h = 0.084
+risk_threshold_h = 0.094
 
 #API call to get 100 day volatility
 market_data_provider = 'yahoo'
