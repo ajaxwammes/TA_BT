@@ -46,7 +46,7 @@ days_volatility = 100
 days_trend = 1400
 
 #Volatility threshold
-volatility_threshold = 100000
+volume_threshold = 100000
 
 #mix/max portfolio length
 min_portfolio_length = 30
@@ -71,4 +71,4 @@ individual_rebalance_threshold = 0.1
 no_trades_variable = 0.19
 
 #when an individual stock is worth > weigthed_risk_value, rebalance the stock
-weigthed_risk_threshold = 1.4
+weigthed_risk_threshold = 1.23

@@ -38,11 +38,11 @@ class TestPortfolioCreator(unittest.TestCase):
         self.all_products = pd.read_csv('./data/Portfolio2.csv')
 
         self.choices = [
-         #   'Renewable energy',
+            'Renewable energy',
             'Clean water and oceans',
              'Circular economy',
              'Transportation of the future',
-          #  'Energy-saving technology',
+            'Energy-saving technology',
              'Plant-based food'
         ]
 
@@ -50,8 +50,8 @@ class TestPortfolioCreator(unittest.TestCase):
         self.fresh_environment = self.all_products[self.all_products.Industry.isin(self.choices)]
 
         self.customerID = 1002
-        self.risk_level = 2
-        self.money_in_portfolio = 10000
+        self.risk_level = 3
+        self.money_in_portfolio = 50000
 
 
     # def test_split(self):

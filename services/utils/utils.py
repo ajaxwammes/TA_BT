@@ -41,10 +41,10 @@ def risk(ticker):
             trend = 'y'
         else:
             trend = 'n'
-        if df['Volume'][-1] > RTL.volatility_threshold:
-            volatility = 'y'
+        if df['Volume'][-1] > RTL.volume_threshold:
+            volume = 'y'
         else:
-            volatility = 'n'
+            volume = 'n'
         df = df['Close'].tail(RTL.days_volatility)
         df = pd.Series.to_frame(df)
         df['ret'] = np.log(df.Close / df.Close.shift(1))
@@ -52,4 +52,4 @@ def risk(ticker):
     except Exception:
         print('CHECK THIS PRODUCT, POSSIBLY NO LONGER EXISTS', ticker)
         vol = 'N/A'
-    return vol, trend, volatility
+    return vol, trend, volume

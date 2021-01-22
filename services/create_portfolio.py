@@ -75,7 +75,6 @@ class PortfolioCreator:
         elements_high = high_risk.sort_values('Risk',ascending=True).head(len_high_risk)
         
         frames = [elements_low, elements_med, elements_high]
-
         self.environment = pd.concat(frames)
 
     def portfolio_lmh2(self,additional_prod,risk_level,money_in_portfolio):
@@ -115,7 +114,6 @@ class PortfolioCreator:
             frames = [additional_prod, self.environment]
             self.environment = pd.concat(frames)
 
-
     def risklvl_lmh2(self,risk_level,money_in_portfolio):
         should_be_risk_total = RTL.risk_lvl[risk_level]
         risk_port1 = sum(self.environment['Risk'])/len(self.environment)
@@ -127,7 +125,6 @@ class PortfolioCreator:
         calc = (1/weight_port2) * (should_be_risk_total - (risk_port1*weight_port1))
         res_key, res_val = min(RTL.risk_lvl.items(), key=lambda x: abs(calc - x[1]))
         return res_key
-
 
     def add_stocks(self,all_products,money_in_portfolio,risk_level):
         original_environment = self.environment.copy()
@@ -151,7 +148,7 @@ class PortfolioCreator:
         self.environment['Non_rel'] = self.value_risk
         self.environment['Risk'] = self.environment['Non_rel'].str[0]
         self.environment['Trend'] = self.environment['Non_rel'].str[1]
-        self.environment['Volatility'] = self.environment['Non_rel'].str[2]
+        self.environment['Volume'] = self.environment['Non_rel'].str[2]
         self.environment = self.environment.drop('Non_rel', 1)
         self.environment = self.environment.dropna()
         self.environment = self.environment[pd.to_numeric(self.environment['Risk'], errors='coerce').notnull()]
