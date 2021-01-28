@@ -6,3 +6,4 @@ futures3
 pyarrow
 Flask
 ibapi
+pyEX
