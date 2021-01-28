@@ -138,7 +138,7 @@ class PortfolioCreator:
         self.environment = pd.concat(frames)
         self.environment = self.environment.sort_values('Risk')
 
-    def risk_clean(self):
+    def risk_clean(self,money_in_portfolio):
         companylist = list(self.environment['Ticker'])
         self.value_risk = []
         with ThreadPoolExecutor(max_workers=10) as executer:
@@ -149,6 +149,8 @@ class PortfolioCreator:
         self.environment['Risk'] = self.environment['Non_rel'].str[0]
         self.environment['Trend'] = self.environment['Non_rel'].str[1]
         self.environment['Volume'] = self.environment['Non_rel'].str[2]
+        money_per_stock = money_in_portfolio / len(self.environment)
+        self.environment['No_stocks'] = money_per_stock / self.environment['Non_rel'].str[3]
         self.environment = self.environment.drop('Non_rel', 1)
         self.environment = self.environment.dropna()
         self.environment = self.environment[pd.to_numeric(self.environment['Risk'], errors='coerce').notnull()]
@@ -170,7 +172,7 @@ class PortfolioCreator:
 
     def run(self, money_in_portfolio, risk_level, all_products):
         self.analyst_ratings()
-        self.risk_clean()
+        self.risk_clean(money_in_portfolio)
         self.portfolio_lmh(money_in_portfolio,risk_level)
         self.portfolio_check(money_in_portfolio,risk_level,all_products)
         self.value_per_stock(money_in_portfolio)
