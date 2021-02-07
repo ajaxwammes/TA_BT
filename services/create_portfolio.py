@@ -132,7 +132,7 @@ class PortfolioCreator:
         cond = all_products['Ticker'].isin(self.environment['Ticker'])
         self.environment = all_products.drop(all_products[cond].index)
         self.analyst_ratings()
-        self.risk_clean()
+        self.risk_clean(money_in_portfolio)
         self.portfolio_lmh2(additional_prod,risk_level,money_in_portfolio)
         frames = [original_environment, self.environment]
         self.environment = pd.concat(frames)

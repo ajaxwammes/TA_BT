@@ -31,6 +31,9 @@ except ModuleNotFoundError as ex:
     sys.path.append('./')
     from services.create_portfolio import PortfolioCreator
 
+desired_width = 320
+pd.set_option('display.max_rows', None)
+#pd.set_option('display.width', desired_width)
 
 class TestPortfolioCreator(unittest.TestCase):
 
@@ -39,7 +42,7 @@ class TestPortfolioCreator(unittest.TestCase):
 
         self.choices = [
             'Renewable energy',
-            'Clean water and oceans',
+        #    'Clean water and oceans',
              'Circular economy',
              'Transportation of the future',
             'Energy-saving technology',

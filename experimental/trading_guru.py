@@ -109,12 +109,15 @@ app.connect(host='127.0.0.1', port=7497, clientId=23)
 con_thread = threading.Thread(target=websocket_con, daemon=True)
 con_thread.start()
 
-tickers = ["PBD", "SPWR", "BLDP", "AMSC", "TSLA", "HCCI", "VTNR", "CWST", "OLED", "SRCL", "BMI",
-           "TTEK", "CWCO", "POWI", "BYND", "FSLR", "SEDG"]
+tickers = ["WCN", "AQN", "RSG", "WM", "AWK", "OLED", "CWST", "SJW", "ETN", "CWT",
+           "BMI", "BEP", "NEP", "TTEK", "CWCO", "CWEN", "APTV", "CLH", "POWI",
+           "HASI", "ON", "SBS", "ERII", "ITRI", "AY", "TRN", "DAR", "AQUA", "CVA",
+           "ORA", "AMRC", "HSC", "WLDN", "HCCI", "TPIC", "CSIQ", "AZRE", "REGI",
+           "OESX", "ASPN", "NOVA", "AMSC", "DQ", "PLUG", "VTNR", "AQMS", "BEEM"]
 
 #Select how much money is allocated to each stock
 capital_total = 50000
-capital = capital_total / len(tickers)
+capital = capital_total / (len(tickers) - 10)
 
 #>>>>>>>>>>>>>>>> Storing trade app object in dataframe <<<<<<<<<<<<<<<<<<<
 
@@ -158,7 +161,7 @@ def atr(DF,n):
     df['L-PC']=abs(df['Low']-df['Close'].shift(1))
     df['TR']=df[['H-L','H-PC','L-PC']].max(axis=1,skipna=False)
     #df['ATR'] = df['TR'].rolling(n).mean()
-    df['ATR'] = df['TR'].ewm(com=n, min_periods=n).mean()*1.4
+    df['ATR'] = df['TR'].ewm(com=n, min_periods=n).mean()*1.5
     return df['ATR']
 
 
@@ -286,7 +289,7 @@ def main():
     ord_df = app.order_df
     for ticker in tickers:
         print("starting pass-through for.....",ticker)
-        histData(tickers.index(ticker),usTechStk(ticker),'1 M', '15 mins')
+        histData(tickers.index(ticker),usTechStk(ticker),'1 M', '10 mins')
         time.sleep(5)
         df = dataDataframe(app,tickers,ticker)
         df["stoch"] = stochOscltr(df)
@@ -305,49 +308,54 @@ def main():
         # You have no existing positions at all: simply make the trade
         # df["macd"][-1]> df["signal"][-1] and \
         if len(pos_df.columns)==0:
-            if df["stoch"][-1]> 30 and \
+            if df["macd"][-1]> df["signal"][-1] and \
+                df["stoch"][-1]> 30 and \
                df["stoch"][-1] > df["stoch"][-2]:
                    app.reqIds(-1)
                    time.sleep(2)
                    order_id = app.nextValidOrderId
-                   app.placeOrder(order_id,usTechStk(ticker),marketOrder("BUY",quantity))
-                   app.placeOrder(order_id+1,usTechStk(ticker),stopOrder("SELL",quantity,round(df["Close"][-1]-df["atr"][-1],1)))
+                   if df.index[-1][-8:] != '21:45:00':
+                    app.placeOrder(order_id,usTechStk(ticker),marketOrder("BUY",quantity))
+                    app.placeOrder(order_id+1,usTechStk(ticker),stopOrder("SELL",quantity,round(df["Close"][-1]-df["atr"][-1],1)))
 
         # You have existing DF with positions, but this ticker isn't in your pos DF: simply make the trade
         elif len(pos_df.columns)!=0 and ticker not in pos_df["Symbol"].tolist():
-            if df["stoch"][-1]> 30 and \
+            if df["macd"][-1]> df["signal"][-1] and \
+                df["stoch"][-1]> 30 and \
                df["stoch"][-1] > df["stoch"][-2]:
                    app.reqIds(-1)
                    time.sleep(2)
                    order_id = app.nextValidOrderId
-                   app.placeOrder(order_id,usTechStk(ticker),marketOrder("BUY",quantity))
-                   app.placeOrder(order_id+1,usTechStk(ticker),stopOrder("SELL",quantity,round(df["Close"][-1]-df["atr"][-1],1)))
+                   if df.index[-1][-8:] != '21:45:00':
+                    app.placeOrder(order_id,usTechStk(ticker),marketOrder("BUY",quantity))
+                    app.placeOrder(order_id+1,usTechStk(ticker),stopOrder("SELL",quantity,round(df["Close"][-1]-df["atr"][-1],1)))
 
         # You have existing DF with positions, and your ticker in in de pos DF, but the value is 0 (it's been bought but also already sold): simply make the trade
         elif len(pos_df.columns)!=0 and ticker in pos_df["Symbol"].tolist():
             if pos_df[pos_df["Symbol"]==ticker]["Position"].sort_values(ascending=True).values[-1] == 0:
-                if df["stoch"][-1]> 30 and \
+                if df["macd"][-1]> df["signal"][-1] and \
+                    df["stoch"][-1]> 30 and \
                    df["stoch"][-1] > df["stoch"][-2]:
                    app.reqIds(-1)
                    time.sleep(2)
                    order_id = app.nextValidOrderId
-                   app.placeOrder(order_id,usTechStk(ticker),marketOrder("BUY",quantity))
-                   app.placeOrder(order_id+1,usTechStk(ticker),stopOrder("SELL",quantity,round(df["Close"][-1]-df["atr"][-1],1)))
+                   if df.index[-1][-8:] != '21:45:00':
+                    app.placeOrder(order_id,usTechStk(ticker),marketOrder("BUY",quantity))
+                    app.placeOrder(order_id+1,usTechStk(ticker),stopOrder("SELL",quantity,round(df["Close"][-1]-df["atr"][-1],1)))
 
             # You have existing DF with positions, and your ticker is in de pos DF, and the value is > 0: Cancel the old stop order and place a new stop order
             elif pos_df[pos_df["Symbol"]==ticker]["Position"].sort_values(ascending=True).values[-1] > 0:
                 try:
                     ord_id = ord_df[ord_df["Symbol"]==ticker]["OrderId"].sort_values(ascending=True).values[-1]
-                except IndexError:
-                    pass
-                else:
-                    ord_id = ord_df[ord_df["Symbol"] == ticker]["OrderId"].sort_values(ascending=True).values[0]
-                old_quantity = pos_df[pos_df["Symbol"]==ticker]["Position"].sort_values(ascending=True).values[-1]
-                app.cancelOrder(ord_id)
-                app.reqIds(-1)
-                time.sleep(2)
-                order_id = app.nextValidOrderId
-                app.placeOrder(order_id,usTechStk(ticker),stopOrder("SELL",old_quantity,round(df["Close"][-1]-df["atr"][-1],1)))
+                    app.cancelOrder(ord_id)
+                    old_quantity = pos_df[pos_df["Symbol"]==ticker]["Position"].sort_values(ascending=True).values[-1]
+                    app.reqIds(-1)
+                    time.sleep(2)
+                    if df.index[-1][-8:] != '21:45:00':
+                        order_id = app.nextValidOrderId
+                        app.placeOrder(order_id,usTechStk(ticker),stopOrder("SELL",old_quantity,round(df["Close"][-1]-df["atr"][-1],1)))
+                except Exception as e:
+                    print(ticker, e)
 
 
 #extract and store historical data in dataframe repetitively
