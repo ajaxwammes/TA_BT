@@ -103,6 +103,7 @@ def dataDataframe(symbols,TradeApp_obj):
     return df_data
 
 
+
 #extract and store historical data in dataframe
 historicalData = dataDataframe(tickers,app)
 
@@ -159,17 +160,20 @@ for ticker in tickers:
                 tickers_signal[ticker] = ""
                 trade_data[ticker][trade_count[ticker]].append((ohlc_dict[ticker]["Open"][i] - ohlc_dict[ticker]["slippage"][i]))
                 trade_count[ticker]+=1
-                tickers_ret[ticker].append((((ohlc_dict[ticker]["Open"][i]
-                                             -ohlc_dict[ticker]["slippage"][i]))))
-                                  
+                tickers_ret[ticker].append((ohlc_dict[ticker]["Open"][i]
+                                             -ohlc_dict[ticker]["slippage"][i])
+                                            /(ohlc_dict[ticker]["Close"][i-1])-1)
+
 
             elif ohlc_dict[ticker]["High"][i] >= ohlc_dict[ticker]["Close"][i-1] + ohlc_dict[ticker]["atr"][i-1]:
                 tickers_signal[ticker] = ""
                 trade_data[ticker][trade_count[ticker]].append((ohlc_dict[ticker]["Close"][i-1] + ohlc_dict[ticker]["atr"][i-1] - ohlc_dict[ticker]["slippage"][i]))
                 trade_count[ticker]+=1
-                tickers_ret[ticker].append((((ohlc_dict[ticker]["Close"][i-1]
+                tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i-1]
                                              +ohlc_dict[ticker]["atr"][i-1]
-                                             -ohlc_dict[ticker]["slippage"][i]))))
+                                             -ohlc_dict[ticker]["slippage"][i-1])
+                                           /(ohlc_dict[ticker]["Close"][i-1])-1)
+
                                                
             else:
                 tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i]/ohlc_dict[ticker]["Close"][i-1])-1)

@@ -51,7 +51,7 @@ def atr(DF, n=20):
     df["L-PC"] = abs(df['Low']-df['Close'].shift(1))
     df['TR'] = df[['H-L','H-PC','L-PC']].max(axis=1,skipna=False)
 #    df['ATR'] = df['TR'].rolling(n).mean()
-    df['ATR'] = df['TR'].ewm(com=n,min_periods=n).mean()
+    df['ATR'] = df['TR'].ewm(com=n,min_periods=n).mean()*10
     return df['ATR']
 
 

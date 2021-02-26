@@ -27,6 +27,8 @@ import pandas as pd
 import numpy as np
 import threading
 import time
+from dependencies import strategy_hardcoded_values as SHV
+
 
 class TradeApp(EWrapper, EClient): 
     def __init__(self): 
@@ -71,7 +73,6 @@ class TradeApp(EWrapper, EClient):
         self.order_df = self.order_df.append(dictionary, ignore_index=True)
         
 
-
 def usTechStk(symbol,sec_type="STK",currency="USD",exchange="ISLAND"):
     contract = Contract()
     contract.symbol = symbol
@@ -109,15 +110,16 @@ app.connect(host='127.0.0.1', port=7497, clientId=23)
 con_thread = threading.Thread(target=websocket_con, daemon=True)
 con_thread.start()
 
+#these to come from create_portfolio.py
 tickers = ["WCN", "AQN", "RSG", "WM", "AWK", "OLED", "CWST", "SJW", "ETN", "CWT",
            "BMI", "BEP", "NEP", "TTEK", "CWCO", "CWEN", "APTV", "CLH", "POWI",
            "HASI", "ON", "SBS", "ERII", "ITRI", "AY", "TRN", "DAR", "AQUA", "CVA",
-           "ORA", "AMRC", "HSC", "WLDN", "HCCI", "TPIC", "CSIQ", "AZRE", "REGI",
+           "ORA", "AMRC", "WLDN", "HCCI", "TPIC", "CSIQ", "AZRE", "REGI",
            "OESX", "ASPN", "NOVA", "AMSC", "DQ", "PLUG", "VTNR", "AQMS", "BEEM"]
 
 #Select how much money is allocated to each stock
-capital_total = 50000
-capital = capital_total / (len(tickers) - 10)
+capital_total = SHV.capital_total
+capital = capital_total / (len(tickers))
 
 #>>>>>>>>>>>>>>>> Storing trade app object in dataframe <<<<<<<<<<<<<<<<<<<
 
@@ -161,7 +163,7 @@ def atr(DF,n):
     df['L-PC']=abs(df['Low']-df['Close'].shift(1))
     df['TR']=df[['H-L','H-PC','L-PC']].max(axis=1,skipna=False)
     #df['ATR'] = df['TR'].rolling(n).mean()
-    df['ATR'] = df['TR'].ewm(com=n, min_periods=n).mean()*5
+    df['ATR'] = df['TR'].ewm(com=n, min_periods=n).mean()*SHV.atr_multiplier
     return df['ATR']
 
 
@@ -190,44 +192,7 @@ def rsi(DF,n=20):
     df['RSI'] = 100 - (100/(1+df['RS']))
     return df['RSI']
 
-""" 
-#Not being used right now:
 
-#BollingerBands
-def bollBnd(DF, n=20):
-    df = DF.copy()
-#    df["MA"] = df['Close'].rolling(n).mean() #simple moving average
-    df["MA"] = df['Close'].ewm(span=n,min_periods=n).mean() #exponential movinga avg
-    df["BB_up"] = df['MA'] + 2*df['Close'].rolling(n).std(ddof=0)
-    df["BB_dn"] = df['MA'] - 2*df['Close'].rolling(n).std(ddof=0)
-    df["BB_width"] = df["BB_up"] - df["BB_dn"]
-    return df   
-
-
-#ADX: to see how a stock is trending
-def adx(DF,n=20):
-    df2 = DF.copy()
-    df2['H-L']=abs(df2['High']-df2['Low'])
-    df2['H-PC']=abs(df2['High']-df2['Close'].shift(1))
-    df2['L-PC']=abs(df2['Low']-df2['Close'].shift(1))
-    df2['TR']=df2[['H-L','H-PC','L-PC']].max(axis=1,skipna=False)
-    df2['+DM']=np.where((df2['High']-df2['High'].shift(1))>(df2['Low'].shift(1)-df2['Low']),df2['High']-df2['High'].shift(1),0)
-    df2['+DM']=np.where(df2['+DM']<0,0,df2['+DM'])
-    df2['-DM']=np.where((df2['Low'].shift(1)-df2['Low'])>(df2['High']-df2['High'].shift(1)),df2['Low'].shift(1)-df2['Low'],0)
-    df2['-DM']=np.where(df2['-DM']<0,0,df2['-DM'])
-
-    df2["+DMMA"]=df2['+DM'].ewm(span=n,min_periods=n).mean()
-    df2["-DMMA"]=df2['-DM'].ewm(span=n,min_periods=n).mean()
-    df2["TRMA"]=df2['TR'].ewm(span=n,min_periods=n).mean()
-
-    df2["+DI"]=100*(df2["+DMMA"]/df2["TRMA"])
-    df2["-DI"]=100*(df2["-DMMA"]/df2["TRMA"])
-    df2["DX"]=100*(abs(df2["+DI"]-df2["-DI"])/(df2["+DI"]+df2["-DI"]))
-
-    df2["ADX"]=df2["DX"].ewm(span=n,min_periods=n).mean()
-
-    return df2['ADX']
-"""
 
 #>>>>>>>>>>>>>>>>>>>> Define the orders you want to make <<<<<<<<<<<<<<<<<<<<
 
@@ -246,9 +211,6 @@ def stopOrder(direction,quantity,st_price):
     order.auxPrice = st_price
     return order
 
-"""
-Not using:
-
 def limitOrder(direction,quantity,lmt_price):
     order = Order()
     order.action = direction
@@ -258,19 +220,7 @@ def limitOrder(direction,quantity,lmt_price):
     return order
 
 
-def trailStopOrder (direction,quantity,tr_step,st_price):
-    order = Order()
-    order.action = direction
-    order.orderType = "TRAIL"
-    order.totalQuantity = quantity
-    order.auxPrice = tr_step
-    order.trailStopPrice = st_price
-    return order
-"""
-
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>> Actual Strategy <<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-# Change this when adapting the strategy
-
 def main():
     app.data = {}
     app.pos_df = pd.DataFrame(columns=['Account', 'Symbol', 'SecType',
@@ -289,7 +239,7 @@ def main():
     ord_df = app.order_df
     for ticker in tickers:
         print("starting pass-through for.....",ticker)
-        histData(tickers.index(ticker),usTechStk(ticker),'1 M', '15 mins')
+        histData(tickers.index(ticker),usTechStk(ticker),'1 M', SHV.ticker_size_mins)
         time.sleep(5)
         df = dataDataframe(app,tickers,ticker)
         df["stoch"] = stochOscltr(df)
@@ -308,48 +258,52 @@ def main():
         # You have no existing positions at all: simply make the trade
         # df["macd"][-1]> df["signal"][-1] and \
         if len(pos_df.columns)==0:
-            if df["macd"][-1]> df["signal"][-1] and \
-                df["stoch"][-1]> 30 and \
-               df["stoch"][-1] > df["stoch"][-2]:
-                   app.reqIds(-1)
-                   time.sleep(2)
-                   order_id = app.nextValidOrderId
-                   if df.index[-1][-8:] != '21:45:00':
-                    app.placeOrder(order_id,usTechStk(ticker),marketOrder("BUY",quantity))
-                    app.placeOrder(order_id + 1, usTechStk(ticker),
-                                   stopOrder("SELL", quantity, round(df["Close"][-1]*0.75, 1)))
-                    app.placeOrder(order_id + 2, usTechStk(ticker),
-                                   stopOrder("SELL", quantity, round(df["Close"][-1] + df["atr"][-1], 1)))
+            try:
+                if df["macd"][-1]> df["signal"][-1] and \
+                    df["stoch"][-1]> SHV.stoch_threshold and \
+                   df["stoch"][-1] > df["stoch"][-2]:
+                       app.reqIds(-1)
+                       time.sleep(2)
+                       order_id = app.nextValidOrderId
+                       if df.index[-1][-8:] != '21:45:00':
+                        app.placeOrder(order_id,usTechStk(ticker),marketOrder("BUY",quantity))
+                        app.placeOrder(order_id + 1, usTechStk(ticker),
+                                       limitOrder("SELL", quantity, round(df["Close"][-1] + df["atr"][-1], 1)))
+            except Exception as e:
+                print(ticker, e)
 
         # You have existing DF with positions, but this ticker isn't in your pos DF: simply make the trade
         elif len(pos_df.columns)!=0 and ticker not in pos_df["Symbol"].tolist():
-            if df["macd"][-1]> df["signal"][-1] and \
-                df["stoch"][-1]> 30 and \
-               df["stoch"][-1] > df["stoch"][-2]:
-                   app.reqIds(-1)
-                   time.sleep(2)
-                   order_id = app.nextValidOrderId
-                   if df.index[-1][-8:] != '21:45:00':
-                    app.placeOrder(order_id,usTechStk(ticker),marketOrder("BUY",quantity))
-                    app.placeOrder(order_id + 1, usTechStk(ticker),
-                                   stopOrder("SELL", quantity, round(df["Close"][-1] * 0.75, 1)))
-                    app.placeOrder(order_id + 2, usTechStk(ticker),
-                                   stopOrder("SELL", quantity, round(df["Close"][-1] + df["atr"][-1], 1)))
+            try:
+                if df["macd"][-1]> df["signal"][-1] and \
+                    df["stoch"][-1]> SHV.stoch_threshold and \
+                   df["stoch"][-1] > df["stoch"][-2]:
+                       app.reqIds(-1)
+                       time.sleep(2)
+                       order_id = app.nextValidOrderId
+                       if df.index[-1][-8:] != '21:45:00':
+                        app.placeOrder(order_id,usTechStk(ticker),marketOrder("BUY",quantity))
+                        app.placeOrder(order_id + 1, usTechStk(ticker),
+                                       limitOrder("SELL", quantity, round(df["Close"][-1] + df["atr"][-1], 1)))
+            except Exception as e:
+                print(ticker, e)
 
         # You have existing DF with positions, and your ticker in in de pos DF, but the value is 0 (it's been bought but also already sold): simply make the trade
         elif len(pos_df.columns)!=0 and ticker in pos_df["Symbol"].tolist():
             if pos_df[pos_df["Symbol"]==ticker]["Position"].sort_values(ascending=True).values[-1] == 0:
-                if df["macd"][-1]> df["signal"][-1] and \
-                    df["stoch"][-1]> 30 and \
-                   df["stoch"][-1] > df["stoch"][-2]:
-                   app.reqIds(-1)
-                   time.sleep(2)
-                   order_id = app.nextValidOrderId
-                   if df.index[-1][-8:] != '21:45:00':
-                       app.placeOrder(order_id + 1, usTechStk(ticker),
-                                      stopOrder("SELL", quantity, round(df["Close"][-1] * 0.75, 1)))
-                       app.placeOrder(order_id + 2, usTechStk(ticker),
-                                      stopOrder("SELL", quantity, round(df["Close"][-1] + df["atr"][-1], 1)))
+                try:
+                    if df["macd"][-1]> df["signal"][-1] and \
+                        df["stoch"][-1]> SHV.stoch_threshold and \
+                       df["stoch"][-1] > df["stoch"][-2]:
+                       app.reqIds(-1)
+                       time.sleep(2)
+                       order_id = app.nextValidOrderId
+                       if df.index[-1][-8:] != '21:45:00':
+                           app.placeOrder(order_id + 1, usTechStk(ticker),
+                                          limitOrder("SELL", quantity, round(df["Close"][-1] + df["atr"][-1], 1)))
+                except Exception as e:
+                    print(ticker, e)
+
 
             # You have existing DF with positions, and your ticker is in de pos DF, and the value is > 0: Cancel the old stop order and place a new stop order
             elif pos_df[pos_df["Symbol"]==ticker]["Position"].sort_values(ascending=True).values[-1] > 0:
@@ -367,15 +321,14 @@ def main():
                     print(ticker, e)
 
 
-
 #extract and store historical data in dataframe repetitively
 starttime = time.time()
 
 #when should the code stop running in sec -> 1 month
-timeout = time.time() + 60*60*696
+timeout = time.time() + SHV.run_duration
 
 #How long should the code sleep in between runs (900 sleep time = 15min)
 while time.time() <= timeout:
     main()
     print('Check done, going to sleep now')
-    time.sleep(900 - ((time.time() - starttime) % 900.0))
+    time.sleep(60*SHV.ticker_size - ((time.time() - starttime) % 60*SHV.ticker_size))
