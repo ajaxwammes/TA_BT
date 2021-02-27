@@ -4,6 +4,9 @@ capital_total = 50000
 #how long should the code run for (in seconds in sec-min-hour-days)
 run_duration = 60*60*24*31
 
+#length of original portfolio
+stocks_n = 40
+
 #Change port to IB client you are using
 #TWS paper trading:7497
 #TWS money trading:7496
@@ -28,6 +31,9 @@ ticker_size_mins = str(ticker_size) + ' ' + 'mins'
 
 #the threshold value for the stochastic indicator
 stoch_threshold = 30
+
+#percentage sell-off after rebalancing
+rebalance_perc = 0.25
 
 
 """ TECHNICAL INDICATORS """

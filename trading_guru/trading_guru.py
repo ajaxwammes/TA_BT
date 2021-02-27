@@ -71,6 +71,12 @@ class TradeApp(EWrapper, EClient):
                       "TotalQty": order.totalQuantity, "CashQty": order.cashQty, 
                       "LmtPrice": order.lmtPrice, "AuxPrice": order.auxPrice, "Status": orderState.status}
         self.order_df = self.order_df.append(dictionary, ignore_index=True)
+
+    def accountSummary(self, reqId:int, account: str, tag: str, value: str, currency:str):
+        super().accountSummary(reqId, account, tag, value, currency)
+        x = value
+        print(x[1])
+
         
 
 def usTechStk(symbol,sec_type="STK",currency="USD",exchange="ISLAND"):
@@ -80,7 +86,6 @@ def usTechStk(symbol,sec_type="STK",currency="USD",exchange="ISLAND"):
     contract.currency = currency
     contract.exchange = exchange
     return contract 
-
 
 
 def histData(req_num,contract,duration,candle_size):
@@ -100,22 +105,31 @@ def histData(req_num,contract,duration,candle_size):
 def websocket_con():
     app.run()
 
-#Change port to IB client you are using
-#TWS paper trading:7497
-#TWS money trading:7496
-#IB Gateway paper trading: 4002
-#IB Gateway money trading: 4001
+
 app = TradeApp()
 app.connect(host='127.0.0.1', port=SHV.port, clientId=23)
 con_thread = threading.Thread(target=websocket_con, daemon=True)
 con_thread.start()
 
-#these to come from create_portfolio.py
-tickers = SHV.ticker_symbols
 
 #Select how much money is allocated to each stock
 capital_total = SHV.capital_total
-capital = capital_total / (len(tickers))
+
+#the capital per stock
+capital = SHV.capital_total / SHV.stocks_n
+
+
+def tickers_final(pos_n):
+    if app.accountSummary() > capital and \
+    pos_n == SHV.stocks_n:
+        add_stocks = int(app.accountSummary()/capital)
+        stocks_total = pos_n + add_stocks
+        tickers = SHV.ticker_symbols[:stocks_total]
+    else:
+        tickers = SHV.ticker_symbols[:SHV.stocks_n]
+    return tickers
+    
+
 
 #>>>>>>>>>>>>>>>> Storing trade app object in dataframe <<<<<<<<<<<<<<<<<<<
 
@@ -136,9 +150,7 @@ def MACD(DF,a=SHV.fast_moving_average,b=SHV.slow_moving_average,c=SHV.signal_lin
 
 
 def stochOscltr(DF,a=SHV.stoch_lookback_period,b=SHV.stoch_moving_average_window):
-    """Stochastic Oscillator: over/undersold: >80 overbought and <20 oversold
-       a = lookback period
-       b = moving average window for %D"""
+    """Stochastic Oscillator: over/undersold: >80 overbought and <20 oversold"""
     df = DF.copy()
     df['C-L'] = df['Close'] - df['Low'].rolling(a).min()
     df['H-L'] = df['High'].rolling(a).max() - df['Low'].rolling(a).min()
@@ -213,6 +225,7 @@ def limitOrder(direction,quantity,lmt_price):
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>> Actual Strategy <<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def main():
+    app.reqAccountSummary(9003, "All", "$LEDGER:USD")
     app.data = {}
     app.pos_df = pd.DataFrame(columns=['Account', 'Symbol', 'SecType',
                             'Currency', 'Position', 'Avg cost'])
@@ -224,7 +237,9 @@ def main():
     app.reqPositions()
     time.sleep(2)
     pos_df = app.pos_df
-    pos_df.drop_duplicates(inplace=True,ignore_index=True) # position callback tends to give duplicate values
+    pos_df.drop_duplicates(inplace=True, ignore_index=True) #position callback tends to give duplicate values
+    pos_n = len(pos_df)
+    tickers = tickers_final(pos_n)
     app.reqOpenOrders()
     time.sleep(2)
     ord_df = app.order_df
@@ -247,7 +262,6 @@ def main():
             continue
 
         # You have no existing positions at all: simply make the trade
-        # df["macd"][-1]> df["signal"][-1] and \
         if len(pos_df.columns)==0:
             try:
                 if df["macd"][-1]> df["signal"][-1] and \
@@ -259,7 +273,7 @@ def main():
                        if df.index[-1][-8:] != '21:45:00':
                         app.placeOrder(order_id,usTechStk(ticker),marketOrder("BUY",quantity))
                         app.placeOrder(order_id + 1, usTechStk(ticker),
-                                       limitOrder("SELL", quantity, round(df["Close"][-1] + df["atr"][-1], 1)))
+                                       limitOrder("SELL", quantity*SHV.rebalance_perc, round(df["Close"][-1] + df["atr"][-1], 1)))
             except Exception as e:
                 print(ticker, e)
 
@@ -275,7 +289,7 @@ def main():
                        if df.index[-1][-8:] != '21:45:00':
                         app.placeOrder(order_id,usTechStk(ticker),marketOrder("BUY",quantity))
                         app.placeOrder(order_id + 1, usTechStk(ticker),
-                                       limitOrder("SELL", quantity, round(df["Close"][-1] + df["atr"][-1], 1)))
+                                       limitOrder("SELL", quantity*SHV.rebalance_perc, round(df["Close"][-1] + df["atr"][-1], 1)))
             except Exception as e:
                 print(ticker, e)
 
@@ -291,7 +305,7 @@ def main():
                        order_id = app.nextValidOrderId
                        if df.index[-1][-8:] != '21:45:00':
                            app.placeOrder(order_id + 1, usTechStk(ticker),
-                                          limitOrder("SELL", quantity, round(df["Close"][-1] + df["atr"][-1], 1)))
+                                          limitOrder("SELL", quantity*SHV.rebalance_perc, round(df["Close"][-1] + df["atr"][-1], 1)))
                 except Exception as e:
                     print(ticker, e)
 
