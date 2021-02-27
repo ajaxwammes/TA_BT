@@ -106,16 +106,12 @@ def websocket_con():
 #IB Gateway paper trading: 4002
 #IB Gateway money trading: 4001
 app = TradeApp()
-app.connect(host='127.0.0.1', port=7497, clientId=23)
+app.connect(host='127.0.0.1', port=SHV.port, clientId=23)
 con_thread = threading.Thread(target=websocket_con, daemon=True)
 con_thread.start()
 
 #these to come from create_portfolio.py
-tickers = ["WCN", "AQN", "RSG", "WM", "AWK", "OLED", "CWST", "SJW", "ETN", "CWT",
-           "BMI", "BEP", "NEP", "TTEK", "CWCO", "CWEN", "APTV", "CLH", "POWI",
-           "HASI", "ON", "SBS", "ERII", "ITRI", "AY", "TRN", "DAR", "AQUA", "CVA",
-           "ORA", "AMRC", "WLDN", "HCCI", "TPIC", "CSIQ", "AZRE", "REGI",
-           "OESX", "ASPN", "NOVA", "AMSC", "DQ", "PLUG", "VTNR", "AQMS", "BEEM"]
+tickers = SHV.ticker_symbols
 
 #Select how much money is allocated to each stock
 capital_total = SHV.capital_total
@@ -130,11 +126,7 @@ def dataDataframe(TradeApp_obj,symbols, symbol):
     return df
 
 
-def MACD(DF,a=12,b=26,c=9):
-    """function to calculate MACD
-       typical values a(fast moving average) = 12; 
-                      b(slow moving average) =26;
-                      c(signal line ma window) =9"""
+def MACD(DF,a=SHV.fast_moving_average,b=SHV.slow_moving_average,c=SHV.signal_line):
     df = DF.copy()
     df["MA_Fast"]=df["Close"].ewm(span=a,min_periods=a).mean()
     df["MA_Slow"]=df["Close"].ewm(span=b,min_periods=b).mean()
@@ -143,7 +135,7 @@ def MACD(DF,a=12,b=26,c=9):
     return df
 
 
-def stochOscltr(DF,a=20,b=3):
+def stochOscltr(DF,a=SHV.stoch_lookback_period,b=SHV.stoch_moving_average_window):
     """Stochastic Oscillator: over/undersold: >80 overbought and <20 oversold
        a = lookback period
        b = moving average window for %D"""
@@ -155,7 +147,7 @@ def stochOscltr(DF,a=20,b=3):
     return df['%K'].rolling(b).mean()
 
 
-def atr(DF,n):
+def atr(DF,n=SHV.atr_n):
     "function to calculate True Range and Average True Range"
     df = DF.copy()
     df['H-L']=abs(df['High']-df['Low'])
@@ -167,7 +159,7 @@ def atr(DF,n):
     return df['ATR']
 
 
-def rsi(DF,n=20):
+def rsi(DF,n=SHV.rsi_n):
     df = DF.copy()
     df['delta']=df['Close'] - df['Close'].shift(1)
     df['gain']=np.where(df['delta']>=0,df['delta'],0)
@@ -191,7 +183,6 @@ def rsi(DF,n=20):
     df['RS'] = df['avg_gain']/df['avg_loss']
     df['RSI'] = 100 - (100/(1+df['RS']))
     return df['RSI']
-
 
 
 #>>>>>>>>>>>>>>>>>>>> Define the orders you want to make <<<<<<<<<<<<<<<<<<<<
@@ -245,7 +236,7 @@ def main():
         df["stoch"] = stochOscltr(df)
         df["macd"] = MACD(df)["MACD"]
         df["signal"] = MACD(df)["Signal"]
-        df["atr"] = atr(df, 60)
+        df["atr"] = atr(df)
 #        df["adx"] = adx(df)
 #        df["bollBnd_width"] = bollBnd(df)['BB_width']
 #        df["bollBnd_up"] = bollBnd(df)['BB_up']
