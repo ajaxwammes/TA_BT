@@ -1,8 +1,11 @@
 #how much money is a customer putting in the algorithm
 capital_total = 50000
 
+#seconds in a day
+secs_day = 86400
+
 #how long should the code run for (in seconds in sec-min-hour-days)
-run_duration = 60*60*24*31
+run_duration = secs_day*31
 
 #length of original portfolio
 stocks_n = 40
@@ -39,8 +42,8 @@ rebalance_perc = 0.25
 """ TECHNICAL INDICATORS """
 
 #ATR
-#by how much should the ATR be multipied before a stock is sold / rebalanced
-atr_multiplier = 8
+#by how much should the ATR be multipied before a stock is sold / rebalanced should be 11
+atr_multiplier = 1
 
 #what n is the ATR looking at
 atr_n = 80

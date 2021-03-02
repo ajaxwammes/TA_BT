@@ -25,10 +25,12 @@ from ibapi.contract import Contract
 from ibapi.order import Order
 import pandas as pd
 import numpy as np
+import requests
 import threading
 import time
 from dependencies import strategy_hardcoded_values as SHV
 
+account_value = []
 
 class TradeApp(EWrapper, EClient): 
     def __init__(self): 
@@ -43,7 +45,7 @@ class TradeApp(EWrapper, EClient):
                                           'AuxPrice', 'Status'])
         
     def historicalData(self, reqId, bar):
-        print(f'Time: {bar.date}, Open: {bar.open}, Close: {bar.close}')
+        #print(f'Time: {bar.date}, Open: {bar.open}, Close: {bar.close}')
         if reqId not in self.data:
             self.data[reqId] = [{"Date":bar.date,"Open":bar.open,"High":bar.high,"Low":bar.low,"Close":bar.close,"Volume":bar.volume}]
         else:
@@ -72,14 +74,16 @@ class TradeApp(EWrapper, EClient):
                       "LmtPrice": order.lmtPrice, "AuxPrice": order.auxPrice, "Status": orderState.status}
         self.order_df = self.order_df.append(dictionary, ignore_index=True)
 
-    def accountSummary(self, reqId:int, account: str, tag: str, value: str, currency:str):
+
+    def accountSummary(self, reqId: int, account: str, tag: str, value: str, currency: str):
         super().accountSummary(reqId, account, tag, value, currency)
-        x = value
-        print(x[1])
+        if tag == 'CashBalance':
+            print('Cash Balance: ',value)
+            account_value.append(value)
+            return value
 
-        
 
-def usTechStk(symbol,sec_type="STK",currency="USD",exchange="ISLAND"):
+def usTechStk(symbol, sec_type="STK", currency="USD", exchange="ISLAND"):
     contract = Contract()
     contract.symbol = symbol
     contract.secType = sec_type
@@ -120,16 +124,22 @@ capital = SHV.capital_total / SHV.stocks_n
 
 
 def tickers_final(pos_n):
-    if app.accountSummary() > capital and \
+    app.reqAccountSummary(1, "All", "$LEDGER:USD")
+    time.sleep(1)
+    x = float(account_value[-1])
+    if x > capital and \
     pos_n == SHV.stocks_n:
-        add_stocks = int(app.accountSummary()/capital)
+        print('new stocks need to be added for extra capital')
+        add_stocks = float(x)/capital
         stocks_total = pos_n + add_stocks
         tickers = SHV.ticker_symbols[:stocks_total]
+        print(add_stocks, " NEW STOCKS TO INVEST, NOW TOTAL:,", stocks_total)
+        print('these stocks are added', SHV.ticker_symbols[-add_stocks:])
     else:
+        print('there are enough stocks in the universe, no action required')
         tickers = SHV.ticker_symbols[:SHV.stocks_n]
     return tickers
     
-
 
 #>>>>>>>>>>>>>>>> Storing trade app object in dataframe <<<<<<<<<<<<<<<<<<<
 
@@ -206,13 +216,6 @@ def marketOrder(direction,quantity):
     order.totalQuantity = quantity
     return order
 
-def stopOrder(direction,quantity,st_price):
-    order = Order()
-    order.action = direction
-    order.orderType = "STP"
-    order.totalQuantity = quantity
-    order.auxPrice = st_price
-    return order
 
 def limitOrder(direction,quantity,lmt_price):
     order = Order()
@@ -223,9 +226,22 @@ def limitOrder(direction,quantity,lmt_price):
     return order
 
 
+def analyst_ratings(ticker):
+    print('Checking analyst ratings of ', ticker)
+    lhs_url = 'https://query2.finance.yahoo.com/v10/finance/quoteSummary/'
+    rhs_url = '?formatted=true&crumb=swg7qs5y9UP&lang=en-US&region=US&' \
+          'modules=upgradeDowngradeHistory,recommendationTrend,' \
+          'financialData,earningsHistory,earningsTrend,industryTrend&' \
+          'corsDomain=finance.yahoo.com'
+    url = lhs_url + ticker + rhs_url
+    r = requests.get(url)
+    result = r.json()['quoteSummary']['result'][0]
+    rating = result['financialData']['recommendationMean']['fmt']
+    return rating
+
+
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>> Actual Strategy <<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def main():
-    app.reqAccountSummary(9003, "All", "$LEDGER:USD")
     app.data = {}
     app.pos_df = pd.DataFrame(columns=['Account', 'Symbol', 'SecType',
                             'Currency', 'Position', 'Avg cost'])
@@ -270,10 +286,9 @@ def main():
                        app.reqIds(-1)
                        time.sleep(2)
                        order_id = app.nextValidOrderId
-                       if df.index[-1][-8:] != '21:45:00':
-                        app.placeOrder(order_id,usTechStk(ticker),marketOrder("BUY",quantity))
-                        app.placeOrder(order_id + 1, usTechStk(ticker),
-                                       limitOrder("SELL", quantity*SHV.rebalance_perc, round(df["Close"][-1] + df["atr"][-1], 1)))
+                       app.placeOrder(order_id,usTechStk(ticker),marketOrder("BUY",quantity))
+                       app.placeOrder(order_id + 1, usTechStk(ticker),
+                                      limitOrder("SELL", quantity*SHV.rebalance_perc, (df["Close"][-1] + df["atr"][-1], 1)))
             except Exception as e:
                 print(ticker, e)
 
@@ -283,13 +298,12 @@ def main():
                 if df["macd"][-1]> df["signal"][-1] and \
                     df["stoch"][-1]> SHV.stoch_threshold and \
                    df["stoch"][-1] > df["stoch"][-2]:
-                       app.reqIds(-1)
-                       time.sleep(2)
-                       order_id = app.nextValidOrderId
-                       if df.index[-1][-8:] != '21:45:00':
-                        app.placeOrder(order_id,usTechStk(ticker),marketOrder("BUY",quantity))
-                        app.placeOrder(order_id + 1, usTechStk(ticker),
-                                       limitOrder("SELL", quantity*SHV.rebalance_perc, round(df["Close"][-1] + df["atr"][-1], 1)))
+                    app.reqIds(-1)
+                    time.sleep(2)
+                    order_id = app.nextValidOrderId
+                    app.placeOrder(order_id,usTechStk(ticker),marketOrder("BUY",quantity))
+                    app.placeOrder(order_id + 1, usTechStk(ticker),
+                                   limitOrder("SELL", quantity*SHV.rebalance_perc, (df["Close"][-1] + df["atr"][-1], 1)))
             except Exception as e:
                 print(ticker, e)
 
@@ -300,40 +314,41 @@ def main():
                     if df["macd"][-1]> df["signal"][-1] and \
                         df["stoch"][-1]> SHV.stoch_threshold and \
                        df["stoch"][-1] > df["stoch"][-2]:
-                       app.reqIds(-1)
-                       time.sleep(2)
-                       order_id = app.nextValidOrderId
-                       if df.index[-1][-8:] != '21:45:00':
-                           app.placeOrder(order_id + 1, usTechStk(ticker),
-                                          limitOrder("SELL", quantity*SHV.rebalance_perc, round(df["Close"][-1] + df["atr"][-1], 1)))
+                        app.reqIds(-1)
+                        time.sleep(2)
+                        order_id = app.nextValidOrderId
+                        app.placeOrder(order_id, usTechStk(ticker), marketOrder("BUY", quantity))
+                        app.placeOrder(order_id + 1, usTechStk(ticker),
+                                       limitOrder("SELL", quantity*SHV.rebalance_perc, (df["Close"][-1] + df["atr"][-1], 1)))
                 except Exception as e:
                     print(ticker, e)
 
 
             # You have existing DF with positions, and your ticker is in de pos DF, and the value is > 0: Cancel the old stop order and place a new stop order
             elif pos_df[pos_df["Symbol"]==ticker]["Position"].sort_values(ascending=True).values[-1] > 0:
+                print(ticker, ' has already been bought and is an open position')
                 try:
-                    ord_id = ord_df[ord_df["Symbol"]==ticker]["OrderId"].sort_values(ascending=True).values[-1]
-                    app.cancelOrder(ord_id)
-                    old_quantity = pos_df[pos_df["Symbol"]==ticker]["Position"].sort_values(ascending=True).values[-1]
-                    app.reqIds(-1)
-                    time.sleep(2)
-                    if df.index[-1][-8:] != '21:45:00':
+                    analyst_rating = analyst_ratings(ticker)
+                    print(analyst_rating)
+                    if analyst_rating > 3.5:
+                        print('analyst rating is too high, SELL (market order')
+                        ord_id = ord_df[ord_df["Symbol"]==ticker]["OrderId"].sort_values(ascending=True).values[-1]
+                        app.cancelOrder(ord_id)
+                        old_quantity = pos_df[pos_df["Symbol"]==ticker]["Position"].sort_values(ascending=True).values[-1]
+                        app.reqIds(-1)
+                        time.sleep(2)
                         order_id = app.nextValidOrderId
                         app.placeOrder(order_id, usTechStk(ticker),
-                                       stopOrder("SELL", old_quantity, round(df["Close"][-1]+df["atr"][-1], 1)))
+                                           marketOrder("SELL", old_quantity))
+                    else:
+                        print('analyst rating is:', analyst_rating, 'this is lower than threshold, keep the position')
+                        pass
                 except Exception as e:
                     print(ticker, e)
 
 
-#extract and store historical data in dataframe repetitively
-starttime = time.time()
-
-#when should the code stop running in sec -> 1 month
-timeout = time.time() + SHV.run_duration
-
-#How long should the code sleep in between runs (900 sleep time = 15min)
-while time.time() <= timeout:
+#How long should the code sleep in between runs (900sec sleep time = 15min)
+while True:
     main()
-    print('Check done, going to sleep now')
-    time.sleep(60*SHV.ticker_size - ((time.time() - starttime) % 60*SHV.ticker_size))
+    print('Check done, now going to sleep')
+    time.sleep(60*SHV.ticker_size)
