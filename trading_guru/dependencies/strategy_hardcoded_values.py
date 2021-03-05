@@ -1,5 +1,5 @@
 #how much money is a customer putting in the algorithm
-capital_total = 50000
+capital_total = 56759
 
 #seconds in a day
 secs_day = 86400
@@ -35,15 +35,18 @@ ticker_size_mins = str(ticker_size) + ' ' + 'mins'
 #the threshold value for the stochastic indicator
 stoch_threshold = 30
 
-#percentage sell-off after rebalancing
-rebalance_perc = 0.25
+#percentage sell-off compared to ATR distance. If value is 1 then the sell
+# after rebalancing == to the growth of the stock. The low the value the less you sell off (let the runners run)
+rebalance_perc = 0.75
 
+#analyst rating threshold, after which to sell a stock (1 best -5 worst)
+analyst_rating_threshold = 3
 
 """ TECHNICAL INDICATORS """
 
 #ATR
 #by how much should the ATR be multipied before a stock is sold / rebalanced should be 11
-atr_multiplier = 1
+atr_multiplier = 16
 
 #what n is the ATR looking at
 atr_n = 80
