@@ -1,5 +1,5 @@
 #how much money is a customer putting in the algorithm
-capital_total = 56759
+capital_total = 45435
 
 #seconds in a day
 secs_day = 86400
@@ -35,7 +35,7 @@ ticker_size_mins = str(ticker_size) + ' ' + 'mins'
 #the threshold value for the stochastic indicator
 stoch_threshold = 30
 
-#percentage sell-off compared to ATR distance. If value is 1 then the sell
+#percentage sell-off compared to ATR distance. If value is 1 then it rebalances a 100%
 # after rebalancing == to the growth of the stock. The low the value the less you sell off (let the runners run)
 rebalance_perc = 0.75
 

@@ -122,7 +122,7 @@ capital_total = SHV.capital_total
 #the capital per stock
 capital_ps = SHV.capital_total / SHV.stocks_n
 
-
+'''
 def tickers_final(pos_n):
     app.reqAccountSummary(1, "All", "$LEDGER:USD")
     time.sleep(1)
@@ -150,7 +150,7 @@ def tickers_final(pos_n):
             tickers = SHV.ticker_symbols[:pos_n]
             print('total stocks:', pos_n, 'not enough capital to add new stocks')
     return tickers
-
+'''
 
 def analyst_ratings(ticker):
     try:
@@ -270,9 +270,9 @@ def main():
     time.sleep(2)
     pos_df = app.pos_df
     pos_df.drop_duplicates(inplace=True, ignore_index=True) #position callback tends to give duplicate values
-    pos_df2 = pos_df[pos_df.Position != 0]
-    pos_n = len(pos_df2)
-    tickers = tickers_final(pos_n)
+    #pos_df2 = pos_df[pos_df.Position != 0]
+    #pos_n = len(pos_df2)
+    tickers = SHV.ticker_symbols[:SHV.stocks_n]
     app.reqOpenOrders()
     time.sleep(2)
     ord_df = app.order_df
@@ -382,6 +382,8 @@ def main():
                     if len(orders) == 0:
                         print('order has no LimitOrder: placing a new one')
                         quantity_adj = df["atr"][-1] / df["Close"][-1]
+                        app.reqIds(-1)
+                        time.sleep(2)
                         order_id = app.nextValidOrderId
                         app.placeOrder(order_id + 1, usTechStk(ticker),limitOrder("SELL",
                                        np.clip(a=round(quantity * quantity_adj * SHV.rebalance_perc),
