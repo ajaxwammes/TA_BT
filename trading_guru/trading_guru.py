@@ -122,35 +122,7 @@ capital_total = SHV.capital_total
 #the capital per stock
 capital_ps = SHV.capital_total / SHV.stocks_n
 
-'''
-def tickers_final(pos_n):
-    app.reqAccountSummary(1, "All", "$LEDGER:USD")
-    time.sleep(1)
-    x = int(float(account_value[-1]))
-    if SHV.stocks_n > pos_n:
-        n_open = SHV.stocks_n - pos_n
-        print('number of stocks with value zero:',n_open)
-        if (x - (n_open*capital_ps)) / capital_ps >= 1:
-            add_stocks = int((x - (n_open*capital_ps)) / capital_ps)
-            stocks_total = SHV.stocks_n + add_stocks
-            tickers = SHV.ticker_symbols[:stocks_total]
-            print(add_stocks, " NEW STOCKS TO INVEST, NEW TOTAL:,", stocks_total)
-            print('added stocks from: ', SHV.ticker_symbols[SHV.stocks_n])
-        else:
-            tickers = SHV.ticker_symbols[:SHV.stocks_n]
-            print('value not enough to add new stocks to universe')
-    else:
-        if (x / capital_ps) > 1:
-            add_stocks = int(x / capital_ps)
-            stocks_total = int(pos_n + add_stocks)
-            tickers = SHV.ticker_symbols[:stocks_total]
-            print(add_stocks, "new stocks to invest, total:", stocks_total)
-            print('added stocks from: ', SHV.ticker_symbols[pos_n])
-        else:
-            tickers = SHV.ticker_symbols[:pos_n]
-            print('total stocks:', pos_n, 'not enough capital to add new stocks')
-    return tickers
-'''
+
 
 def analyst_ratings(ticker):
     try:
@@ -362,9 +334,7 @@ def main():
 
             # You have existing DF with positions, and your ticker is in de pos DF, and the value is > 0: Cancel the old stop order and place a new stop order
             elif pos_df[pos_df["Symbol"]==ticker]["Position"].sort_values(ascending=True).values[-1] > 0:
-                print(ord_df)
                 orders = (ord_df[ord_df["Symbol"] == ticker]["OrderId"])
-                print(orders)
                 analyst_rating = analyst_ratings(ticker)
                 if float(analyst_rating) > SHV.analyst_rating_threshold and \
                 df.index[-1][-8:] != '21:45:00' and df.index[-1][-8:] != '20:45:00':

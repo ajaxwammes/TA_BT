@@ -1,10 +1,10 @@
 #how much money is a customer putting in the algorithm
-capital_total = 45435
+capital_total = 46000
 
 #seconds in a day
 secs_day = 86400
 
-#how long should the code run for (in seconds in sec-min-hour-days)
+#how long should the code run for (in days)
 run_duration = secs_day*31
 
 #length of original portfolio

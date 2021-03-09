@@ -1,6 +1,6 @@
 import datetime
-from futures3.thread import ThreadPoolExecutor
 import numpy as np
+from futures3.thread import ThreadPoolExecutor
 import pandas as pd
 import pandas_datareader.data as web
 import requests
@@ -49,8 +49,10 @@ def risk(ticker):
         df = pd.Series.to_frame(df)
         df['ret'] = np.log(df.Close / df.Close.shift(1))
         vol = df['ret'].std()
-        shares = df['Close'][-1]
+        #shares = df['Close'][-1]
     except Exception:
         print('CHECK THIS PRODUCT, POSSIBLY NO LONGER EXISTS', ticker)
         vol = 'N/A'
-    return vol, trend, volume, shares
+        trend = 'N/A'
+        volume = 'N/A'
+    return vol, trend, volume

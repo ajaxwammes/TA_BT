@@ -73,3 +73,33 @@ def stopOrder(direction,quantity,st_price):
                 except Exception as e:
                     print(ticker, e)
 '''
+
+'''
+def tickers_final(pos_n):
+    app.reqAccountSummary(1, "All", "$LEDGER:USD")
+    time.sleep(1)
+    x = int(float(account_value[-1]))
+    if SHV.stocks_n > pos_n:
+        n_open = SHV.stocks_n - pos_n
+        print('number of stocks with value zero:',n_open)
+        if (x - (n_open*capital_ps)) / capital_ps >= 1:
+            add_stocks = int((x - (n_open*capital_ps)) / capital_ps)
+            stocks_total = SHV.stocks_n + add_stocks
+            tickers = SHV.ticker_symbols[:stocks_total]
+            print(add_stocks, " NEW STOCKS TO INVEST, NEW TOTAL:,", stocks_total)
+            print('added stocks from: ', SHV.ticker_symbols[SHV.stocks_n])
+        else:
+            tickers = SHV.ticker_symbols[:SHV.stocks_n]
+            print('value not enough to add new stocks to universe')
+    else:
+        if (x / capital_ps) > 1:
+            add_stocks = int(x / capital_ps)
+            stocks_total = int(pos_n + add_stocks)
+            tickers = SHV.ticker_symbols[:stocks_total]
+            print(add_stocks, "new stocks to invest, total:", stocks_total)
+            print('added stocks from: ', SHV.ticker_symbols[pos_n])
+        else:
+            tickers = SHV.ticker_symbols[:pos_n]
+            print('total stocks:', pos_n, 'not enough capital to add new stocks')
+    return tickers
+'''
