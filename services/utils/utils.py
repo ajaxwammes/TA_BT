@@ -49,7 +49,6 @@ def risk(ticker):
         df = pd.Series.to_frame(df)
         df['ret'] = np.log(df.Close / df.Close.shift(1))
         vol = df['ret'].std()
-        #shares = df['Close'][-1]
     except Exception:
         print('CHECK THIS PRODUCT, POSSIBLY NO LONGER EXISTS', ticker)
         vol = 'N/A'

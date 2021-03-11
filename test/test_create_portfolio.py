@@ -38,7 +38,7 @@ pd.set_option('display.max_rows', None)
 class TestPortfolioCreator(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.all_products = pd.read_csv('./data/Portfolio2.csv')
+        self.all_products = pd.read_csv('./data/final_df_static.csv')
 
         self.choices = [
             'Renewable energy',
@@ -49,7 +49,7 @@ class TestPortfolioCreator(unittest.TestCase):
              'Plant-based food'
         ]
 
-        self.environment = pd.read_feather('./data/environment_2020_12_19.feather')
+        #self.environment = pd.read_feather('./data/environment_2020_12_19.feather')
         self.fresh_environment = self.all_products[self.all_products.Industry.isin(self.choices)]
 
         self.customerID = 1002

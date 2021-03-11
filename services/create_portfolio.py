@@ -24,23 +24,22 @@ class PortfolioCreator:
         if 'Analyst_rating' not in self.environment.columns:
             self.environment = analyst_ratings(self.environment)
 
-    def risk_clean(self,money_in_portfolio):
-        #if 'CO2_impact' not in self.environment.columns: #TODO
-        companylist = list(self.environment['Ticker'])
-        self.value_risk = []
-        with ThreadPoolExecutor(max_workers=10) as executer:
-            Value_risk = executer.map(risk, companylist)
-            for Value_risk in Value_risk:
-                self.value_risk.append(Value_risk)
-        self.environment['Non_rel'] = self.value_risk
-        self.environment['Risk'] = self.environment['Non_rel'].str[0]
-        self.environment['Trend'] = self.environment['Non_rel'].str[1]
-        self.environment['Volume'] = self.environment['Non_rel'].str[2]
-        money_per_stock = money_in_portfolio / len(self.environment)
-        #self.environment['No_stocks'] = money_per_stock / self.environment['Non_rel'].str[3]
-        self.environment = self.environment.drop('Non_rel', 1)
-        self.environment = self.environment.dropna()
-        self.environment = self.environment[pd.to_numeric(self.environment['Risk'], errors='coerce').notnull()]
+    def risk_clean(self):
+        if 'Risk' not in self.environment.columns:
+            companylist = list(self.environment['Ticker'])
+            self.value_risk = []
+            with ThreadPoolExecutor(max_workers=10) as executer:
+                Value_risk = executer.map(risk, companylist)
+                for Value_risk in Value_risk:
+                    self.value_risk.append(Value_risk)
+            self.environment['Non_rel'] = self.value_risk
+            self.environment['Risk'] = self.environment['Non_rel'].str[0]
+            self.environment['Trend'] = self.environment['Non_rel'].str[1]
+            self.environment['Volume'] = self.environment['Non_rel'].str[2]
+            #money_per_stock = money_in_portfolio / len(self.environment)
+            #self.environment['No_stocks'] = money_per_stock / self.environment['Non_rel'].str[3]
+            self.environment = self.environment.drop('Non_rel', 1)
+            self.environment = self.environment[pd.to_numeric(self.environment['Risk'], errors='coerce').notnull()]
 
     def get_trades(self,begin_portfolio):
         self.environment['trades'] = round(self.environment['Value_per_stock'] - begin_portfolio['Value_per_stock'],2)
@@ -131,7 +130,7 @@ class PortfolioCreator:
         cond = all_products['Ticker'].isin(self.environment['Ticker'])
         self.environment = all_products.drop(all_products[cond].index)
         self.analyst_ratings()
-        self.risk_clean(money_in_portfolio)
+        self.risk_clean()
         self.portfolio_lmh2(additional_prod,risk_level,money_in_portfolio)
         frames = [original_environment, self.environment]
         self.environment = pd.concat(frames)
@@ -154,8 +153,9 @@ class PortfolioCreator:
 
     def run(self, money_in_portfolio, risk_level, all_products):
         self.analyst_ratings()
-        self.risk_clean(money_in_portfolio)
-        #self.portfolio_lmh(money_in_portfolio,risk_level)
-        #self.portfolio_check(money_in_portfolio,risk_level,all_products)
-        #self.value_per_stock(money_in_portfolio)
+        self.risk_clean()
+        self.environment.to_csv(r'final_df_static.csv',index=False)
+        self.portfolio_lmh(money_in_portfolio,risk_level)
+        self.portfolio_check(money_in_portfolio,risk_level,all_products)
+        self.value_per_stock(money_in_portfolio)
         return self.environment
