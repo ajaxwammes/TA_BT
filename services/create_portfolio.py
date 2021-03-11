@@ -150,11 +150,9 @@ class PortfolioCreator:
         else:
             print('Financial products check: DONE BRO')
 
-
     def run(self, money_in_portfolio, risk_level, all_products):
         self.analyst_ratings()
         self.risk_clean()
-        self.environment.to_csv(r'final_df_static.csv',index=False)
         self.portfolio_lmh(money_in_portfolio,risk_level)
         self.portfolio_check(money_in_portfolio,risk_level,all_products)
         self.value_per_stock(money_in_portfolio)
