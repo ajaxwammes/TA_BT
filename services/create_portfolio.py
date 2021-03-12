@@ -52,6 +52,7 @@ class PortfolioCreator:
         """calculate whether the risk level is low, medium or high and allocate number of
             low, medium and high stock to selected risk level
         """
+        all_cats = self.environment.copy()
         conditions = [
             (self.environment['Risk'] <= RTL.risk_threshold_l),
             (self.environment['Risk'] > RTL.risk_threshold_l) & (self.environment['Risk'] <= RTL.risk_threshold_m),
@@ -71,9 +72,27 @@ class PortfolioCreator:
         elements_low = low_risk.sort_values('Risk',ascending=True).head(len_low_risk)
         elements_med = medium_risk.sort_values('Risk',ascending=True).head(len_med_risk)
         elements_high = high_risk.sort_values('Risk',ascending=True).head(len_high_risk)
-        
         frames = [elements_low, elements_med, elements_high]
         self.environment = pd.concat(frames)
+
+        #feature to only show chosen categories
+        additional_prod = self.portfolio_length(money_in_portfolio) - len(self.environment)
+        if additional_prod >0:
+            cond = all_cats['Ticker'].isin(self.environment['Ticker'])
+            extra_same_stocks = all_cats.drop(all_cats[cond].index)
+            conditions = [
+                (extra_same_stocks['Risk'] <= RTL.risk_threshold_l),
+                (extra_same_stocks['Risk'] > RTL.risk_threshold_l) & (extra_same_stocks['Risk'] <= RTL.risk_threshold_m),
+                (extra_same_stocks['Risk'] > RTL.risk_threshold_m) & (extra_same_stocks['Risk'] <= RTL.risk_threshold_h),
+                (extra_same_stocks['Risk'] > RTL.risk_threshold_h)
+            ]
+            values = ['Low', 'Medium', 'High', 'Unacceptable']
+            extra_same_stocks['Tier'] = np.select(conditions, values)
+            new_elements = extra_same_stocks.sort_values('Risk',ascending=True).head(additional_prod)
+            frames = [new_elements, self.environment]
+            self.environment = pd.concat(frames)
+            self.environment = self.environment.sort_values('Risk',ascending=True)
+
 
     def portfolio_lmh2(self,additional_prod,risk_level,money_in_portfolio):
         conditions = [

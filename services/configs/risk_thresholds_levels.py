@@ -26,10 +26,10 @@ risk_lvl = {0: (risk_based_allocation[0][0]*LR+risk_based_allocation[0][1]*MR+ri
             4: (risk_based_allocation[4][0]*LR+risk_based_allocation[4][1]*MR+risk_based_allocation[4][2]*HR)
             }
 
-#thresholds for individual stock risk allocation into low, medium or high
-risk_threshold_l = 0.033
-risk_threshold_m = 0.048
-risk_threshold_h = 0.094
+#thresholds for individual stock risk allocation into low, medium or high original 0.033, 0;0048,0.923
+risk_threshold_l = 0.043
+risk_threshold_m = 0.064
+risk_threshold_h = 0.155
 
 #API call to get 100 day volatility
 market_data_provider = 'yahoo'
@@ -50,7 +50,7 @@ volume_threshold = 100000
 
 #mix/max portfolio length
 min_portfolio_length = 30
-max_portfolio_length = 40
+max_portfolio_length = 30
 
 #money in portfolio / portfolio_length_variable = no of stocks
 portfolio_length_variable = 150

@@ -33,16 +33,16 @@ except ModuleNotFoundError as ex:
 
 desired_width = 320
 pd.set_option('display.max_rows', None)
-#pd.set_option('display.width', desired_width)
+pd.set_option('display.width', desired_width)
 
 class TestPortfolioCreator(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.all_products = pd.read_csv('./data/final_df_static.csv')
+        self.all_products = pd.read_csv('./data/static_df.csv')
 
         self.choices = [
             'Renewable energy',
-        #    'Clean water and oceans',
+            'Clean water and oceans',
              'Circular economy',
              'Transportation of the future',
             'Energy-saving technology',
