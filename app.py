@@ -9,17 +9,6 @@ app = Flask(__name__)
 
 anything = []
 
-@app.route('/api/withdraw_deposit', methods = ['POST'])
-def withdraw_deposit():
-    begin_portfolio = pd.read_csv('./data/post_creation.csv')
-    content = request.json
-    customerID = content['customerID']
-    money_delta = content['money_delta']
-    dw_obj = DepositWithdrawer(begin_portfolio)
-    result = dw_obj.run(begin_portfolio=begin_portfolio,
-                        money_delta=money_delta)
-    anything.append(list(result['Company']))
-    return jsonify('')
 
 @app.route('/api/create_portfolio', methods = ['POST'])
 def create_portfolio():
@@ -56,6 +45,18 @@ def assess_risk():
 @app.route('/api/show', methods = ['GET'])
 def show():
     return jsonify(anything)
+
+'''@app.route('/api/withdraw_deposit', methods = ['POST'])
+def withdraw_deposit():
+    begin_portfolio = pd.read_csv('./data/post_creation.csv')
+    content = request.json
+    customerID = content['customerID']
+    money_delta = content['money_delta']
+    dw_obj = DepositWithdrawer(begin_portfolio)
+    result = dw_obj.run(begin_portfolio=begin_portfolio,
+                        money_delta=money_delta)
+    anything.append(list(result['Company']))
+    return jsonify('')'''
 
 
 

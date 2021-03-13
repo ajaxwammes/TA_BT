@@ -28,10 +28,10 @@ class TestPortfolioCreator(unittest.TestCase):
 
     def test_run(self):
         ra_obj = RiskAssessor()
-        q1_answer = '80%'
+        q1_answer = '27'
         q2_answer = 'Between 5 and 10 years'
         q3_answer = 'Pension'
-        q4_answer = 'No'
+        q4_answer = 'Save extra for university'
         result = ra_obj.get_risk_level(q1_answer=q1_answer,
                                        q2_answer=q2_answer,
                                        q3_answer=q3_answer,

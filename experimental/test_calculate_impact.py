@@ -8,11 +8,11 @@ Impact calculation
 
 import pandas as pd
 try:
-    from services.calculate_impact import ImpactCalculator
+    from experimental.calculate_impact import ImpactCalculator
 except ModuleNotFoundError as ex:
     import sys
-    sys.path.append('./')
-    from services.calculate_impact import ImpactCalculator
+    sys.path.append('../test/')
+    from experimental.calculate_impact import ImpactCalculator
 
 pd.options.mode.chained_assignment = None
 #desired_width = 320

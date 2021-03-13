@@ -54,7 +54,7 @@ class TestPortfolioCreator(unittest.TestCase):
 
         self.customerID = 1002
         self.risk_level = 2
-        self.money_in_portfolio = 50000
+        self.money_in_portfolio = 2000
 
 
     # def test_split(self):
