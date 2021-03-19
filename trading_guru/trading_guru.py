@@ -1,10 +1,9 @@
 """
 TG_Bot
-Created on Wed Sep 09 / Wed Oct 21 16:32:12
+Created on Wed Sep 09, 16:32:12
 @author: mart.vos
 
 #Strategy 12: Trading Guru
-
 Universe: Sustainable
 
 Backtested performance Jan 2010 - Dec 2020
@@ -19,12 +18,12 @@ from ibapi.wrapper import EWrapper
 from ibapi.contract import Contract
 import pandas as pd
 import numpy as np
-import requests
 import threading
 import time
 from dependencies import strategy_hardcoded_values as SHV
 from dependencies import technical_indicators
 from dependencies import order_types
+from dependencies import features
 
 account_value = []
 
@@ -36,18 +35,20 @@ class TradeApp(EWrapper, EClient):
         EClient.__init__(self, self) 
         self.data = {}
         self.pos_df = pd.DataFrame(columns=['Account', 'Symbol', 'SecType',
-                                    'Currency', 'Position', 'Avg cost'])
+                                            'Currency', 'Position', 'Avg cost'])
         self.order_df = pd.DataFrame(columns=['PermId', 'ClientId', 'OrderId',
-                                          'Account', 'Symbol', 'SecType',
-                                          'Exchange', 'Action', 'OrderType',
-                                          'TotalQty', 'CashQty', 'LmtPrice',
-                                          'AuxPrice', 'Status'])
+                                              'Account', 'Symbol', 'SecType',
+                                              'Exchange', 'Action', 'OrderType',
+                                              'TotalQty', 'CashQty', 'LmtPrice',
+                                              'AuxPrice', 'Status'])
         
     def historicalData(self, reqId, bar):
         if reqId not in self.data:
-            self.data[reqId] = [{"Date":bar.date,"Open":bar.open,"High":bar.high,"Low":bar.low,"Close":bar.close,"Volume":bar.volume}]
+            self.data[reqId] = [{"Date": bar.date, "Open": bar.open, "High": bar.high, "Low": bar.low,
+                                 "Close": bar.close, "Volume": bar.volume}]
         else:
-            self.data[reqId].append({"Date":bar.date,"Open":bar.open,"High":bar.high,"Low":bar.low,"Close":bar.close,"Volume":bar.volume})
+            self.data[reqId].append({"Date": bar.date, "Open":bar.open, "High": bar.high, "Low": bar.low,
+                                     "Close": bar.close,  "Volume": bar.volume})
 
     def nextValidId(self, orderId):
         super().nextValidId(orderId)
@@ -87,7 +88,7 @@ def usTechStk(symbol, sec_type="STK", currency="USD", exchange="ISLAND"):
     return contract 
 
 #EClient function to request contract details
-def histData(req_num,contract,duration,candle_size):
+def histData(req_num, contract, duration, candle_size):
     """extracts historical data"""
     app.reqHistoricalData(reqId=req_num,
                           contract=contract,
@@ -110,36 +111,10 @@ con_thread.start()
 
 #Storing trade app object in dataframe
 def dataDataframe(TradeApp_obj,symbols, symbol):
-    "returns extracted historical data in dataframe format"
     df = pd.DataFrame(TradeApp_obj.data[symbols.index(symbol)])
     df.set_index("Date", inplace=True)
     return df
 
-def analyst_ratings(ticker):
-    try:
-        lhs_url = 'https://query2.finance.yahoo.com/v10/finance/quoteSummary/'
-        rhs_url = '?formatted=true&crumb=swg7qs5y9UP&lang=en-US&region=US&' \
-              'modules=upgradeDowngradeHistory,recommendationTrend,' \
-              'financialData,earningsHistory,earningsTrend,industryTrend&' \
-              'corsDomain=finance.yahoo.com'
-        url = lhs_url + ticker + rhs_url
-        r = requests.get(url)
-        result = r.json()['quoteSummary']['result'][0]
-        rating_float = result['financialData']['recommendationMean']['fmt']
-        rating = float(rating_float)
-    except Exception:
-        rating = 0
-        print(ticker, 'has no analyst rating')
-    return rating
-
-#new solution: 50 tickers in list, while ps calculation is /40. It will continue trying to buy stocks even when no money.
-def what_tickers():
-    app.reqAccountSummary(1, "All", "$LEDGER:USD")
-    time.sleep(1)
-    tickers = SHV.ticker_symbols
-    return tickers
-
-#keep trying to fetch DF until it's available
 def data_in_df(tickers, ticker):
     counter = 1
     while True:
@@ -155,21 +130,22 @@ def data_in_df(tickers, ticker):
             continue
         return df
 
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>> Actual Strategy <<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+#Actual Strategy
 def main():
     app.data = {}
     app.pos_df = pd.DataFrame(columns=['Account', 'Symbol', 'SecType',
-                            'Currency', 'Position', 'Avg cost'])
+                                       'Currency', 'Position', 'Avg cost'])
     app.order_df = pd.DataFrame(columns=['PermId', 'ClientId', 'OrderId',
-                                      'Account', 'Symbol', 'SecType',
-                                      'Exchange', 'Action', 'OrderType',
-                                      'TotalQty', 'CashQty', 'LmtPrice',
-                                      'AuxPrice', 'Status'])
+                                         'Account', 'Symbol', 'SecType',
+                                         'Exchange', 'Action', 'OrderType',
+                                         'TotalQty', 'CashQty', 'LmtPrice',
+                                         'AuxPrice', 'Status'])
     app.reqPositions()
     time.sleep(2)
     pos_df = app.pos_df
     pos_df.drop_duplicates(inplace=True, ignore_index=True) #position callback tends to give duplicate values
-    tickers = what_tickers()
+    tickers = features.what_tickers(app)
     app.reqOpenOrders()
     time.sleep(2)
     ord_df = app.order_df
@@ -197,7 +173,7 @@ def main():
             # You have no existing positions at all: simply make the trade
             if len(pos_df.columns)==0:
                 try:
-                    analyst_rating = analyst_ratings(ticker)
+                    analyst_rating = features.analyst_ratings(ticker)
                     if df["macd"][-1] > df["signal"][-1] and \
                     df["stoch"][-1] > SHV.stoch_threshold and \
                     df["stoch"][-1] > df["stoch"][-2] and \
@@ -207,7 +183,7 @@ def main():
                        app.reqIds(-1)
                        time.sleep(2)
                        order_id = app.nextValidOrderId
-                       app.placeOrder(order_id,usTechStk(ticker),order_types.marketOrder("BUY",quantity))
+                       app.placeOrder(order_id,usTechStk(ticker),order_types.marketOrder("BUY", quantity))
                        time.sleep(2)
                        quantity_adj = df["atr"][-1] / df["Close"][-1]
                        app.placeOrder(order_id + 1, usTechStk(ticker),
@@ -219,7 +195,7 @@ def main():
             # You have existing DF with positions, but this ticker isn't in your pos DF: simply make the trade
             elif len(pos_df.columns)!=0 and ticker not in pos_df["Symbol"].tolist():
                 try:
-                    analyst_rating = analyst_ratings(ticker)
+                    analyst_rating = features.analyst_ratings(ticker)
                     if df["macd"][-1]> df["signal"][-1] and \
                     df["stoch"][-1]> SHV.stoch_threshold and \
                     df["stoch"][-1] > df["stoch"][-2] and \
@@ -242,7 +218,7 @@ def main():
             elif len(pos_df.columns)!=0 and ticker in pos_df["Symbol"].tolist():
                 if pos_df[pos_df["Symbol"]==ticker]["Position"].sort_values(ascending=True).values[-1] == 0:
                     try:
-                        analyst_rating = analyst_ratings(ticker)
+                        analyst_rating = features.analyst_ratings(ticker)
                         if df["macd"][-1] > df["signal"][-1] and \
                         df["stoch"][-1] > SHV.stoch_threshold and \
                         df["stoch"][-1] > df["stoch"][-2] and \
@@ -265,7 +241,7 @@ def main():
                 # You have existing DF with positions, and your ticker is in de pos DF, and the value is > 0: Cancel the old stop order and place a new stop order
                 elif pos_df[pos_df["Symbol"]==ticker]["Position"].sort_values(ascending=True).values[-1] > 0:
                     orders = (ord_df[ord_df["Symbol"] == ticker]["OrderId"])
-                    analyst_rating = analyst_ratings(ticker)
+                    analyst_rating = features.analyst_ratings(ticker)
                     if float(analyst_rating) > SHV.analyst_rating_threshold and \
                     df.index[-1][-8:] != '21:45:00' and df.index[-1][-8:] != '20:45:00':
                         print('analyst rating is too high:',analyst_rating, ',selling now')

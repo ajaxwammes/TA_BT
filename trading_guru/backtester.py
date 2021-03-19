@@ -21,9 +21,11 @@ import threading
 import time
 import numpy as np
 from copy import deepcopy
-from trading_guru.dependencies import KPIs_Long as KL, KPIs_IntraDay as KI, technical_indicators as TI
+from trading_guru.dependencies import technical_indicators as TI
+from trading_guru.features_backtester import KPIs_Long as KL, KPIs_IntraDay as KI
 
-class TradeApp(EWrapper, EClient): 
+
+class TradeApp(EWrapper, EClient):
     def __init__(self):
         EClient.__init__(self, self)
         self.data = {}
