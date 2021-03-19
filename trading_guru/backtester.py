@@ -17,11 +17,11 @@ from ibapi.wrapper import EWrapper
 from ibapi.contract import Contract
 import pandas as pd
 import threading
-import matplotlib
+#import matplotlib
 import time
 import numpy as np
 from copy import deepcopy
-from dependencies import KPIs_Long as KL, KPIs_IntraDay as KI, technical_indicators as TI
+from trading_guru.dependencies import KPIs_Long as KL, KPIs_IntraDay as KI, technical_indicators as TI
 
 class TradeApp(EWrapper, EClient): 
     def __init__(self):
@@ -33,7 +33,7 @@ class TradeApp(EWrapper, EClient):
             self.data[reqId] = [{"Date":bar.date,"Open":bar.open,"High":bar.high,"Low":bar.low,"Close":bar.close,"Volume":bar.volume}]
         else:
             self.data[reqId].append({"Date":bar.date,"Open":bar.open,"High":bar.high,"Low":bar.low,"Close":bar.close,"Volume":bar.volume})
-        print("reqID:{}, date:{}, open:{}, high:{}, low:{}, close:{}, volume:{}".format(reqId,bar.date,bar.open,bar.high,bar.low,bar.close,bar.volume))
+        #print("reqID:{}, date:{}, open:{}, high:{}, low:{}, close:{}, volume:{}".format(reqId,bar.date,bar.open,bar.high,bar.low,bar.close,bar.volume))
 
 def usTechStk(symbol,sec_type="STK",currency="USD",exchange="ISLAND"):
     contract = Contract()
@@ -71,23 +71,24 @@ con_thread.start()
 time.sleep(1) # some latency added to ensure that the connection is established
 
 #Financial products
-tickers = ["WCN", "AQN", "RSG", "WM", "AWK", "OLED", "CWST", "SJW", "ETN", "CWT",
+tickers = ["CWST", "ETN", "CWT",
            "BMI", "BEP", "NEP", "TTEK", "CWCO", "CWEN", "APTV", "CLH", "POWI",
-           "HASI", "ON", "SBS", "ERII", "ITRI", "AY", "TRN", "DAR", "AQUA", "CVA",
-           "ORA", "AMRC", "HSC", "WLDN", "HCCI", "TPIC", "CSIQ", "AZRE", "REGI",
-           "OESX", "ASPN", "NOVA", "AMSC", "DQ", "PLUG", "VTNR", "AQMS", "BEEM"]
+           "HASI", "ON", "ITRI", "AY", "TRN", "DAR",
+           "ORA", "AMRC", "WLDN", "HCCI", "TPIC", "CSIQ", "AZRE", "REGI",
+           "OESX", "ASPN", "NOVA", "AMSC", "DQ", "PLUG", "BEEM"]
 
 #Capital per stock USD
 Capital = 5800
 
 #Costs per trade USD
-Costs_per_trade = 0.5
+Costs_per_trade = 0.05
 
 
 #select candles and duration 
 for ticker in tickers:
     try:
-        histData(tickers.index(ticker),usTechStk(ticker),'1 Y', '15 mins') #change KPIs long accordingly
+        print('getting historical data from:', ticker)
+        histData(tickers.index(ticker),usTechStk(ticker),'5 Y', '1 hour') #change KPIs long accordingly
         time.sleep(5)
     except Exception as e:
         print(e)
@@ -109,7 +110,6 @@ historicalData = dataDataframe(tickers,app)
 
 #Check loading process of backtesting: (needs to be equal to # of stocks)
 #len(app.data)
-
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Backtesting <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -215,7 +215,7 @@ for ticker in tickers:
 
 KPI_ID_df = pd.DataFrame([win_rate,mean_ret_pt,mean_ret_pwt,mean_ret_plt],
                       index=["Win Rate","MR Per Trade","MR Per WT", "MR Per LT"])
-KPI_ID_df.T
+print(KPI_ID_df.T)
 
 #Intra-day KPIs - Overall
 wrs = sum(KPI_ID_df.T['Win Rate'])/len(KPI_ID_df.T['Win Rate'])
@@ -225,7 +225,7 @@ mrplt = sum(KPI_ID_df.T['MR Per LT'])/len(KPI_ID_df.T['MR Per LT'])
 
 IntraDay_Indicators = pd.DataFrame([wrs, mrpt, mrpwt, mrplt],
                       index=["Win Rate","MR Per Trade","MR Per WT", "MR Per LT"])      
-IntraDay_Indicators.T
+print(IntraDay_Indicators.T)
 
 
 #>>>>>>>>>>>>>>>>>>>> Get General KPIs of strategy <<<<<<<<<<<<<<<<<<<<<<<
@@ -245,7 +245,7 @@ for ticker in tickers:
     total_trades_ind[ticker] = trade_count[ticker]  
     
 KPI_df = pd.DataFrame([cagr,sharpe,sortinos,max_drawdown,total_trades_ind],index=["Return","Sharpe","Sortino","Max Drawdown","Total Trades"])
-KPI_df.T
+print(KPI_df.T)
 
 #General KPIs - (now 2,5% risk free rate, target = 0%)
 CAGR_strat = KL.CAGR(strategy_df)
@@ -262,13 +262,16 @@ begin_cap = len(tickers)*Capital
 Return_perc = (begin_cap+Return_Strat)/begin_cap-1
 
 General_indicators = pd.DataFrame([CAGR_strat,Sortino_strat,Sharpe_strat,Max_Drawdown_strat,Total_trades],index=['Ret alt.','Sortino','Sharpe','Max Drawdown','Total Trades'])
-General_indicators.T
+print(General_indicators.T)
 
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Visuals <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
  
 # vizualization of strategy return
 (1+strategy_df["ret"]).cumprod().plot()
+
+
+
 
 # vizualization of strategy per stock
 (1+ohlc_dict[ticker]["ret"]).cumprod().plot()
@@ -307,7 +310,7 @@ CAGR_BH = KL.CAGR(strategy_df2)
 Max_dd_BH = KL.max_dd(strategy_df2)
 
 BH_df = pd.DataFrame([CAGR_BH,Max_dd_BH],index=["CAGR","Max dd"])
-BH_df.T
+print(BH_df.T)
 
 #Plot B-H strategy
 

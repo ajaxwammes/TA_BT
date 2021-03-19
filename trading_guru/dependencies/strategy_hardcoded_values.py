@@ -1,5 +1,5 @@
 #how much money is a customer putting in the algorithm
-capital_total = 46000
+capital_total = 55410
 
 #seconds in a day
 secs_day = 86400

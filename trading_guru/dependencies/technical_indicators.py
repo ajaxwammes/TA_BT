@@ -13,7 +13,6 @@ import numpy as np
 
 #MACD indicator
 def MACD(DF,a=12,b=26,c=9):
-
     #function to calculate MACD: typical values a(fast moving average) = 12; 
       #                                         b(slow moving average) =26; 
        #                                        c(signal line ma window) =9

@@ -6,6 +6,58 @@ Between 31 - 45: 2
 Between 46 - 60: 1
 Older or equal to 61: 0
 """
+q1 = {18: 3,
+      19: 3,
+      20: 3,
+      21: 3,
+      22: 3,
+      23: 3,
+      24: 3,
+      25: 3,
+      26: 3,
+      27: 3,
+      28: 3,
+      29: 3,
+      30: 3,
+      31: 2,
+      32: 2,
+      33: 2,
+      34: 2,
+      35: 2,
+      36: 2,
+      37: 2,
+      38: 2,
+      39: 2,
+      40: 2,
+      41: 2,
+      42: 2,
+      43: 2,
+      44: 2,
+      45: 2,
+      46: 1,
+      47: 1,
+      48: 1,
+      49: 1,
+      50: 1,
+      51: 1,
+      52: 1,
+      53: 1,
+      54: 1,
+      55: 1,
+      56: 1,
+      57: 1,
+      58: 1,
+      59: 1,
+      60: 1,
+      61: 1,
+      62: 0,
+      63: 0,
+      64: 0,
+      65: 1,
+      66: 0,
+      67: 0
+      }
+
 
 #question 2: investment amount
 #no drop-down, does not allow values under 10 (USD)
@@ -20,7 +72,11 @@ Between 26% - 50%: 2
 Between 51% - 75%: 1
 Between 76% - 100%: 0
 '''
-
+q2 = {18: 3,
+      27: 2,
+      55: 1,
+      77: 0
+      }
 
 #question 4: my main motivation for investing is:?
 #drop-down answers:
@@ -30,6 +86,14 @@ q3 = {'Get more out of my savings': 2,
       "Save extra for an emergency": 0,
       "I don't know yet": 2
       }
+
+
+items = {
+      2,
+      4,
+      6,
+      8,
+}
 
 
 '''
