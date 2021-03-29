@@ -20,7 +20,7 @@ def MACD(DF,a=12,b=26,c=9):
     df["MA_Fast"]=df["Close"].ewm(span=a,min_periods=a).mean()
     df["MA_Slow"]=df["Close"].ewm(span=b,min_periods=b).mean()
     df["MACD"]=df["MA_Fast"]-df["MA_Slow"]
-    df["Signal"]=df["MACD"].ewm(span=c,min_periods=c).mean()
+    df["Signal"]=df["MACD"].ewm(span=c, min_periods=c).mean()
     df.dropna(inplace=True)
     return df
 
@@ -38,17 +38,17 @@ def bollBnd(DF, n=20):
     df["BB_up"] = df['MA'] + 2*df['Close'].rolling(n).std(ddof=0)
     df["BB_dn"] = df['MA'] - 2*df['Close'].rolling(n).std(ddof=0)
     df["BB_width"] = df["BB_up"] - df["BB_dn"]
+    df["BB_mean"] = df['BB_width'].ewm(span=n, min_periods=n).mean()
     df.dropna(inplace=True)
     return df
 
- 
 #ATR: to calculate true range and average true range 
 def atr(DF, n=20):
     df = DF.copy()
     df["H-L"] = abs(df['High']-df['Low'])
     df["H-PC"] = abs(df['High']-df['Close'].shift(1))
     df["L-PC"] = abs(df['Low']-df['Close'].shift(1))
-    df['TR'] = df[['H-L','H-PC','L-PC']].max(axis=1,skipna=False)
+    df['TR'] = df[['H-L', 'H-PC', 'L-PC']].max(axis=1, skipna=False)
 #    df['ATR'] = df['TR'].rolling(n).mean()
     df['ATR'] = df['TR'].ewm(com=n,min_periods=n).mean()*10
     return df['ATR']
@@ -118,12 +118,6 @@ def stochOscltr(DF,a=20,b=3):
     df['%K'] = df['C-L']/df['H-L']*100
     #df['%D'] = df['%K'].ewm(span=b,min_periods=b).mean()
     return df['%K'].rolling(b).mean()
-
-def daylight_savings(DF):
-    df = DF.copy()
-    df['date'] = (df.index.str[4:6])
-    df['yes'] = np.where(df['date'] == '03','Yes','No')
-    return df['yes']
 
 
 #Calculate slippage Indian style
