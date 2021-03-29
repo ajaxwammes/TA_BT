@@ -1,10 +1,8 @@
 #how much money is a customer putting in the algorithm
-capital_total = 55410
-
-#seconds in a day
-secs_day = 86400
+capital_total = 52922
 
 #how long should the code run for (in days)
+secs_day = 86400
 run_duration = secs_day*31
 
 #length of original portfolio
@@ -46,7 +44,7 @@ analyst_rating_threshold = 3
 
 #ATR
 #by how much should the ATR be multipied before a stock is sold / rebalanced should be 11
-atr_multiplier = 16
+atr_multiplier = 1
 
 #what n is the ATR looking at
 atr_n = 80

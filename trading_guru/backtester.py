@@ -55,7 +55,7 @@ def histData(req_num,contract,duration,candle_size):
                           whatToShow='ADJUSTED_LAST',
                           useRTH=1,
                           formatDate=1,
-                          keepUpToDate=0,
+                          keepUpToDate=False,
                           chartOptions=[])	 # EClient function to request contract details
 
 def websocket_con():
@@ -73,11 +73,7 @@ con_thread.start()
 time.sleep(1) # some latency added to ensure that the connection is established
 
 #Financial products
-tickers = ["CWST", "ETN", "CWT",
-           "BMI", "BEP", "NEP", "TTEK", "CWCO", "CWEN", "APTV", "CLH", "POWI",
-           "HASI", "ON", "ITRI", "AY", "TRN", "DAR",
-           "ORA", "AMRC", "WLDN", "HCCI", "TPIC", "CSIQ", "AZRE", "REGI",
-           "OESX", "ASPN", "NOVA", "AMSC", "DQ", "PLUG", "BEEM"]
+tickers = ["AAPL", "NTGR", "INTC", "FB", "ORC", "NVDA"]
 
 #Capital per stock USD
 Capital = 5800
@@ -85,32 +81,34 @@ Capital = 5800
 #Costs per trade USD
 Costs_per_trade = 0.05
 
+def dataDataframe(TradeApp_obj,symbols, symbol):
+    df = pd.DataFrame(TradeApp_obj.data[symbols.index(symbol)])
+    df.set_index("Date", inplace=True)
+    return df
 
-#select candles and duration 
-for ticker in tickers:
-    try:
-        print('getting historical data from:', ticker)
-        histData(tickers.index(ticker),usTechStk(ticker),'5 Y', '1 hour') #change KPIs long accordingly
-        time.sleep(5)
-    except Exception as e:
-        print(e)
-        print("unable to extract data for {}".format(ticker))       
+def data_in_df(tickers, ticker):
+    while True:
+        try:
+            df = dataDataframe(app, tickers, ticker)
+        except Exception:
+            print('Need extra time to fetch data...')
+            time.sleep(10)
+            continue
+        return df
 
-#storing trade app object in dataframe
-def dataDataframe(symbols,TradeApp_obj):
-    "returns extracted historical data in dataframe format"
-    df_data = {}
-    for symbol in symbols:
-        df_data[symbol] = pd.DataFrame(TradeApp_obj.data[symbols.index(symbol)])
-        df_data[symbol].set_index("Date",inplace=True)
-    return df_data
+def get_data():
+    data = {}
+    for ticker in tickers:
+        print("Fetching data for", ticker)
+        histData(tickers.index(ticker), usTechStk(ticker), '5 Y', '1 hour')
+        time.sleep(10)
+        data[ticker] = data_in_df(tickers, ticker)
+    return data
 
 
+historicalData = get_data()
 
-#extract and store historical data in dataframe
-historicalData = dataDataframe(tickers,app)
 
-#Check loading process of backtesting: (needs to be equal to # of stocks)
 #len(app.data)
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Backtesting <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -271,8 +269,6 @@ print(General_indicators.T)
  
 # vizualization of strategy return
 (1+strategy_df["ret"]).cumprod().plot()
-
-
 
 
 # vizualization of strategy per stock

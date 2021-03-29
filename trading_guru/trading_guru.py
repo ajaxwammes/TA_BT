@@ -242,5 +242,5 @@ def main():
 #How long should the code sleep in between runs (900sec sleep time = 15min)
 while True:
     main()
-    print('Check done, now going to sleep')
+    print('>>>>>>>>>>>>> Check done, now going to sleep <<<<<<<<<<<<<<<<<<<')
     time.sleep(60*SHV.ticker_size)
