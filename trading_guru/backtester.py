@@ -73,7 +73,14 @@ con_thread.start()
 time.sleep(1) # some latency added to ensure that the connection is established
 
 #Financial products
-tickers = ["AAPL", "NTGR", "INTC", "FB", "ORC", "NVDA"]
+tickers = ['AMRC','AMSC','ASPN','CPST','CLSK','CREE','IPWR','ITRI','ON','OESX',
+           'APTV','FUV','BLDP','BEEM','BLNK','FSR','RIDE','NKLA','NIO','PLUG',
+           'AMTX','AQN','ARRY','AY','AZRE','BEP','CSIQ','ELP',
+           'AWK','BMI','CWT','CWCO','ERII','AQUA',
+           'AQMS','CWST','CLH','CMC',
+           'BYND','TTCF'
+           ]
+
 
 #Capital per stock USD
 Capital = 5800
@@ -100,7 +107,7 @@ def get_data():
     data = {}
     for ticker in tickers:
         print("Fetching data for", ticker)
-        histData(tickers.index(ticker), usTechStk(ticker), '5 Y', '1 hour')
+        histData(tickers.index(ticker), usTechStk(ticker), '5 Y', '4 hours')
         time.sleep(10)
         data[ticker] = data_in_df(tickers, ticker)
     return data
@@ -270,6 +277,7 @@ print(General_indicators.T)
  
 # vizualization of strategy return
 (1+strategy_df["ret"]).cumprod().plot()
+(1+strategy_df["ret"]).cumprod().to_csv(r'high_risk.csv')
 
 
 # vizualization of strategy per stock

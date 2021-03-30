@@ -157,6 +157,7 @@ def buy_conditions(df, ticker, quantity):
 def sell_conditions(ord_df, df, pos_df, ticker):
     orders = (ord_df[ord_df["Symbol"] == ticker]["OrderId"])
     analyst_rating = features.analyst_ratings(ticker)
+    #print('width:', df["b_band_width"][-1],'mean', df["b_band_mean"][-1],'rsi:',df["rsi"][-1])
     if float(analyst_rating) > SHV.analyst_rating_threshold and \
     df.index[-1][-8:] != '21:45:00' and df.index[-1][-8:] != '20:45:00' or \
     df["rsi"][-1] > SHV.rsi_threshold and df["b_band_width"][-1] < df["b_band_mean"][-1] and \
