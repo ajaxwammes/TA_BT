@@ -1,6 +1,7 @@
 import requests
 import time
 from . import strategy_hardcoded_values as SHV
+import datetime, pytz, holidays
 
 def analyst_ratings(ticker):
     try:
@@ -16,7 +17,7 @@ def analyst_ratings(ticker):
         rating = float(rating_float)
     except Exception:
         rating = 0
-        print(ticker, 'has no analyst rating')
+        print('warning:', ticker, 'has no analyst rating')
     return rating
 
 
@@ -26,3 +27,23 @@ def what_tickers(app):
     time.sleep(1)
     tickers = SHV.ticker_symbols
     return tickers
+
+
+'''def afterHours(now = None):
+    tz = pytz.timezone('US/Eastern')
+    us_holidays = holidays.US()
+    if not now:
+        now = datetime.datetime.now(tz)
+    openTime = datetime.time(hour = 9, minute = 30, second = 0)
+    closeTime = datetime.time(hour = 16, minute = 0, second = 0)
+    # If a holiday
+    if now.strftime('%Y-%m-%d') in us_holidays:
+        return True
+    # If before 0930 or after 1600
+    if (now.time() < openTime) or (now.time() > closeTime):
+        return True
+    # If it's a weekend
+    if now.date().weekday() > 4:
+        return True
+    else:
+        return False'''

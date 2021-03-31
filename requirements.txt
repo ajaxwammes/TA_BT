@@ -8,3 +8,4 @@ Flask
 ibapi
 pyEX
 matplotlib
+holidays

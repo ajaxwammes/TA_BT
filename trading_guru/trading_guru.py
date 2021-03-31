@@ -140,6 +140,7 @@ def buy_conditions(df, ticker, quantity):
         analyst_rating < SHV.analyst_rating_threshold and \
         account_value[-1] > capital_ps and \
         df.index[-1][-8:] != '21:45:00' and df.index[-1][-8:] != '20:45:00':
+            print('buying',ticker)
             app.reqIds(-1)
             time.sleep(2)
             order_id = app.nextValidOrderId
@@ -154,29 +155,37 @@ def buy_conditions(df, ticker, quantity):
         print(ticker, e)
 
 
-def sell_conditions(ord_df, df, pos_df, ticker):
+def sell_conditions(ord_df, df, pos_df, ticker, quantity):
     orders = (ord_df[ord_df["Symbol"] == ticker]["OrderId"])
     analyst_rating = features.analyst_ratings(ticker)
     #print('width:', df["b_band_width"][-1],'mean', df["b_band_mean"][-1],'rsi:',df["rsi"][-1])
     if float(analyst_rating) > SHV.analyst_rating_threshold and \
-    df.index[-1][-8:] != '21:45:00' and df.index[-1][-8:] != '20:45:00' or \
-    df["rsi"][-1] > SHV.rsi_threshold and df["b_band_width"][-1] < df["b_band_mean"][-1] and \
     df.index[-1][-8:] != '21:45:00' and df.index[-1][-8:] != '20:45:00':
-        print('analyst rating is too high:', analyst_rating, ',selling now')
-        old_quantity = pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1]
-        app.reqIds(-1)
-        time.sleep(2)
-        order_id = app.nextValidOrderId
-        app.placeOrder(order_id, usTechStk(ticker), order_types.marketOrder("SELL", old_quantity))
-        if len(orders) > 0:
-            ord_id = ord_df[ord_df["Symbol"] == ticker]["OrderId"].sort_values(ascending=True).values[-1]
-            app.cancelOrder(ord_id)
+        print('selling', ticker, 'triggered by analyst ratings')
+        sell(ord_df, pos_df, ticker, orders)
+
+    elif df["rsi"][-1] > SHV.rsi_threshold and df["b_band_width"][-1] < df["b_band_mean"][-1] and \
+    df.index[-1][-8:] != '21:45:00' and df.index[-1][-8:] != '20:45:00':
+        print('selling', ticker, 'triggered by b_bands + RSI')
+        sell(ord_df, pos_df, ticker, orders)
+    else:
+        limitorder_check(ord_df, ticker, df, quantity)
+
+def sell(ord_df, pos_df, ticker, orders):
+    old_quantity = pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1]
+    app.reqIds(-1)
+    time.sleep(2)
+    order_id = app.nextValidOrderId
+    app.placeOrder(order_id, usTechStk(ticker), order_types.marketOrder("SELL", old_quantity))
+    if len(orders) > 0:
+        ord_id = ord_df[ord_df["Symbol"] == ticker]["OrderId"].sort_values(ascending=True).values[-1]
+        app.cancelOrder(ord_id)
 
 
 def limitorder_check(ord_df, ticker, df, quantity):
     orders = (ord_df[ord_df["Symbol"] == ticker]["OrderId"])
     if len(orders) == 0:
-        print('order has no LimitOrder: placing a new one')
+        print('warning:',ticker,'order has no LimitOrder: placing a new one')
         quantity_adj = df["atr"][-1] / df["Close"][-1]
         app.reqIds(-1)
         time.sleep(2)
@@ -230,8 +239,8 @@ def main():
 
             #when you DO own the stock
             elif pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] > 0:
-                sell_conditions(ord_df, df, pos_df, ticker)
-                limitorder_check(ord_df, ticker, df, quantity)
+                sell_conditions(ord_df, df, pos_df, ticker, quantity)
+
 
         else:
             print(ticker, 'does not give a DF')
