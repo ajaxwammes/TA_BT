@@ -1,80 +1,98 @@
-Company,Ticker,Market,Industry,KwH per USD,KG CO2 per USD,Gallons water per USD
-Aemetis,AMTX,NASDAQ,Renewable energy,0.000645042,-,-
-Algonquin Power & Utilities,AQN,NYSE,Renewable energy,0.019087586,1.55885E-07,0.155885399
-Ameresco,AMRC,NYSE,Energy-saving technology,0.100028761,-,-
-America Water Works Company,AWK,NYSE,Clean water and oceans,-,1.8179E-08,0.018179012
-American Superconductor Corporation,AMSC,NASDAQ,Energy-saving technology,-,-,-
-Aptiv PLC,APTV,NYSE,Transportation of the future,-,-,-
-Aqua Metals,AQMS,NASDAQ,Circular economy,-,-,-
-Arcimoto,FUV,NASDAQ,Transportation of the future,-,-,-
-Array Technologies,ARRY,NASDAQ,Renewable energy,-,-,-
-Aspen Aerogels,ASPN,NYSE,Energy-saving technology,-,-,-
-Atlantica,AY,NASDAQ,Renewable energy,0.383566202,2.78126E-06,2.781262189
-Azure Power,AZRE,NYSE,Renewable energy,0.630041367,-,-
-Badger Meter,BMI,NYSE,Clean water and oceans,1,1.71778E-06,1.717782137
-Ballard Power Systems,BLDP,NASDAQ,Transportation of the future,-,-,-
-Beam Global,BEEM,NASDAQ,Transportation of the future,-,-,-
-Beyond Meat,BYND,NASDAQ,Plant-based food,-,-,-
-Blink Charging,BLNK,NASDAQ,Transportation of the future,1,-,-
-Brookfield Renewable Partners,BEP,NYSE,Renewable energy,0.875546098,-,-
-California Water Service Group,CWT,NYSE,Clean water and oceans,-,3.93769E-08,0.039376929
-Canadian Solar,CSIQ,NASDAQ,Renewable energy,1,-,-
-Capstone Turbine Corporation,CPST,NASDAQ,Energy-saving technology,1,-,-
-Casella Waste Systems,CWST,NASDAQ,Circular economy,1,-,-
-Clean Harbors,CLH,NYSE,Circular economy,1,-,-
-CleanSpark,CLSK,NASDAQ,Energy-saving technology,-,-,-
-Clearway Energy,CWEN.C,NYSE,Renewable energy,0.396958511,-,-
-Commercial metals,CMC,NASDAQ,Circular economy,1,-,-
-Companhia Paranaense de Energia - COPEL,ELP,NYSE,Renewable energy,1,-,-
-Consolidated Water,CWCO,NASDAQ,Clean water and oceans,-,4.40272E-05,5
-Covanta Holding Corp,CVA,NYSE,Circular economy,1,-,-
-Cree,CREE,NASDAQ,Energy-saving technology,-,-,-
-Daqo New Energy,DQ,NYSE,Renewable energy,1,-,-
-Darling Ingredients,DAR,NYSE,Circular economy,-,-,-
-Eaton Corporation,ETN,NYSE,Energy-saving technology,-,-,-
-Energy Recovery,ERII,NASDAQ,Clean water and oceans,-,-,-
-Enphase Energy,ENPH,NASDAQ,Renewable energy,-,-,-
-Evoqua,AQUA,NASDAQ,Clean water and oceans,-,7.6042E-08,0.076042026
-First Solar,FSLR,NASDAQ,Renewable energy,1,-,-
-Fisker,FSR,NYSE,Transportation of the future,-,-,-
-Green Plains,GPRE,NASDAQ,Renewable energy,0.25,0.25,-
-Hannon Armstrong Sustainable Infrastructure Capital,HASI,NYSE,Renewable energy,-,0.113709586,5
-Harsco Corporation,HSC,NYSE,Circular economy,1,-,-
-Heritage-Crystal Clean,HCCI,NASDAQ,Circular economy,1,-,-
-Ideal Power,IPWR,NASDAQ,Energy-saving technology,0.25,0.25,-
-Itron,ITRI,NASDAQ,Energy-saving technology,-,-,-
-JinkoSolar Holding,JKS,NYSE,Renewable energy,1,-,-
-Lordstown motor,RIDE,NASDAQ,Transportation of the future,-,-,-
-Nextera Energy Partners,NEP,NYSE,Renewable energy,0.342544922,-,-
-NIKOLA,NKLA,NASDAQ,Transportation of the future,-,-,-
-NIO Limited,NIO,NYSE,Transportation of the future,-,-,-
-ON Semiconductor,ON,NASDAQ,Energy-saving technology,-,-,-
-Orion Energy Systems,OESX,NASDAQ,Energy-saving technology,-,-,-
-Ormat Technologies,ORA,NYSE,Renewable energy,0.08910988,-,-
-Perma-Fix Environmental Services,PESI,NASDAQ,Circular economy,-,-,-
-Plug Power,PLUG,NASDAQ,Transportation of the future,-,-,-
-Power Integrations,POWI,NASDAQ,Energy-saving technology,1,-,-
-Quantumscape,QS,NASDAQ,Transportation of the future,-,-,-
-Ranpak Holdings,PACK,NYSE,Circular economy,0.369607576,-,-
-ReneSola,SOL,NYSE,Renewable energy,0.231618947,-,-
-Renewable Energy Group,REGI,NASDAQ,Renewable energy,-,-,-
-Republic Services,RSG,NYSE,Circular economy,1,-,-
-SABESP,SBS,NYSE,Clean water and oceans,-,2.69485E-05,5
-Schnitzer Steel Industries,SCHN,NASDAQ,Circular economy,1,-,-
-SJW Water,SJW,NYSE,Clean water and oceans,-,2.51507E-07,0.251506805
-Solaredge Technologies,SEDG,NASDAQ,Renewable energy,0.939616501,-,-
-Stericycle,SRCL,NASDAQ,Circular economy,1,-,-
-Sunnova Energy International,NOVA,NYSE,Renewable energy,-,-,-
-SunPower Corporation,SPWR,NASDAQ,Renewable energy,-,-,-
-Sunrun,RUN,NASDAQ,Renewable energy,0.081897703,-,-
-Tattoed chef,TTCF,NASDAQ,Plant-based food,-,-,-
-Tesla,TSLA,NASDAQ,Transportation of the future,-,-,-
-Tetra tech,TTEK,NASDAQ,Clean water and oceans,-,-,-
-TPI Composites,TPIC,NASDAQ,Renewable energy,-,-,-
-Universal Display Corporation,OLED,NASDAQ,Energy-saving technology,-,-,-
-US Ecology,ECOL,NASDAQ,Clean water and oceans,1,5.73817E-08,0.057381689
-Vertex Energy,VTNR,NASDAQ,Circular economy,1,-,-
-Wabtech,WAB,NYSE,Transportation of the future,-,-,-
-Waste Connections,WCN,NYSE,Circular economy,1,-,-
-Waste Management,WM,NYSE,Circular economy,1,-,-
-Willdan Group,WLDN,NYSE,Energy-saving technology,-,-,-
+Company,Ticker,Market,Industry,KwH per USD,KG CO2 per USD,Gallons water per USD,url,CEO
+Aemetis,AMTX,NASDAQ,Renewable energy,0.000645042,-,-,http://www.aemetis.com/,Eric McAfee
+Algonquin Power & Utilities,AQN,NYSE,Renewable energy,0.019087586,1.56E-07,0.155885399,http://algonquinpower.com,Ian Robertson
+Ameresco,AMRC,NYSE,Energy-saving technology,0.100028761,-,-,http://www.ameresco.com,George Sakellaris
+America Water Works Company,AWK,NYSE,Clean water and oceans,-,1.82E-08,0.018179012,https://www.amwater.com,Jeffry Sterba
+American Superconductor Corporation,AMSC,NASDAQ,Energy-saving technology,-,-,-,http://www.amsc.com/,Daniel McGahn
+Applied Materials,AMAT,NASDAQ,Energy-saving technology,-,0.5,-,http://www.appliedmaterials.com/,Gary Dickerson
+Aptiv PLC,APTV,NYSE,Transportation of the future,-,-,-,https://www.aptiv.com,Kevin P. Clark
+Aqua Metals,AQMS,NASDAQ,Circular economy,-,-,-,https://www.aquametals.com/,Stephen Cotton
+Arcimoto,FUV,NASDAQ,Transportation of the future,-,-,-,https://www.arcimoto.com/,Mark Frohnmayer
+Array Technologies,ARRY,NASDAQ,Renewable energy,-,-,-,https://arraytechinc.com/,Jim Fusaro
+Aspen Aerogels,ASPN,NYSE,Energy-saving technology,-,-,-,https://www.aerogel.com,Donald R. Young
+Atlantica,AY,NASDAQ,Renewable energy,0.383566202,2.78E-06,2.781262189,https://www.atlantica.com/,Santiago Seage Medela
+Avangrid,AGR,NYSE,Renewable energy,0.344,-,-,https://www.avangrid.com/,Dennis Arriola
+Azure Power,AZRE,NYSE,Renewable energy,0.630041367,-,-,https://www.azurepower.com,Ranjit Gupta
+Badger Meter,BMI,NYSE,Clean water and oceans,1,1.72E-06,1.717782137,https://www.badgermeter.com/,Kenneth Bockhorst
+Ballard Power Systems,BLDP,NASDAQ,Transportation of the future,-,-,-,http://www.ballard.com/,Randall MacEwen
+Beam Global,BEEM,NASDAQ,Transportation of the future,-,-,-,https://beamforall.com,Albert Baladi
+Beyond Meat,BYND,NASDAQ,Plant-based food,-,-,-,http://beyondmeat.com/,Ethan Brown
+Blink Charging,BLNK,NASDAQ,Transportation of the future,1,-,-,https://blinkcharging.com,Michael Farkas
+Brookfield Renewable Partners,BEP,NYSE,Renewable energy,0.875546098,-,-,https://www.bep.brookfield.com/,Sachin Shah
+California Water Service Group,CWT,NYSE,Clean water and oceans,-,3.94E-08,0.039376929,https://www.calwatergroup.com/,Martin Kropelnicki
+Canadian Solar,CSIQ,NASDAQ,Renewable energy,1,-,-,https://www.canadiansolar.com/,Xiaohua Qu
+Capstone Turbine Corporation,CPST,NASDAQ,Energy-saving technology,1,-,-,https://www.capstoneturbine.com/,Darren Jamison
+Casella Waste Systems,CWST,NASDAQ,Circular economy,1,-,-,https://www.casella.com/,John Casella
+Centrais Eletricas Brasileiras,EBR,NYSE,Renewable energy,0.9,-,-,http://www.eletrobras.com/,Wilson Ferreira
+Clean Harbors,CLH,NYSE,Circular economy,1,-,-,https://www.cleanharbors.com/,Alan McKim
+CleanSpark,CLSK,NASDAQ,Energy-saving technology,-,-,-,https://www.cleanspark.com,S. Matthew Schultz
+Clearway Energy,CWEN.C,NYSE,Renewable energy,0.396958511,-,-,https://www.clearwayenergygroup.com,Craig Cornelius
+Commercial metals,CMC,NASDAQ,Circular economy,1,-,-,https://www.cmc.com,Barbara Smith
+Companhia Energetica de Minas Gerais,CIG,NYSE,Renewable energy,1,-,-,https://novoportal.cemig.com.br,Reynaldo Passanezi Filho
+Companhia Paranaense de Energia - COPEL,ELP,NYSE,Renewable energy,1,-,-,https://www.copel.com/,Daniel Pimentel Slaviero
+Consolidated Water,CWCO,NASDAQ,Clean water and oceans,-,4.40E-05,5,http://www.cwco.com/,Frederick McTaggart
+Covanta Holding Corp,CVA,NYSE,Circular economy,1,-,-,https://www.covanta.com/,Stephen Jones
+Cree,CREE,NASDAQ,Energy-saving technology,-,-,-,http://www.cree.com,Charles Swoboda
+Daqo New Energy,DQ,NYSE,Renewable energy,1,-,-,http://www.dqsolar.com,Longgen Zhang
+Darling Ingredients,DAR,NYSE,Circular economy,-,-,-,https://www.darlingii.com/,Randall Stuewe
+Digi International,DGII,NASDAQ,Energy-saving technology,-,-,-,https://www.digi.com,Ronald Konezny
+Eaton Corporation,ETN,NYSE,Energy-saving technology,-,-,-,http://www.eaton.com/,Craig Arnold
+Ecolab,ECL,NYSE,Clean water and oceans,-,-,0.16,https://www.ecolab.com/,Douglas Baker
+Energy Recovery,ERII,NASDAQ,Clean water and oceans,-,-,-,http://www.energyrecovery.com/,Yu Lang Mao
+Enphase Energy,ENPH,NASDAQ,Renewable energy,-,-,-,https://enphase.com,Badri Kothandaraman
+EnerSys,ENS,NYSE,Energy-saving technology,-,0.17,-,https://www.enersys.com/,David Shaffer
+Evoqua,AQUA,NASDAQ,Clean water and oceans,-,7.60E-08,0.076042026,https://www.evoqua.com,Ronald Keating
+First Solar,FSLR,NASDAQ,Renewable energy,1,-,-,http://www.firstsolar.com/,Mark Widmar
+Fisker,FSR,NYSE,Transportation of the future,-,-,-,https://www.fiskerinc.com,"
+Henrik Fisker"
+Flux Power Holdings,FLUX,NASDAQ,Energy-saving technology,-,0.1,-,https://www.fluxpower.com,Ron Dutt
+Green Plains,GPRE,NASDAQ,Renewable energy,0.25,0.25,-,http://www.gpreinc.com/,Todd Becker
+Hannon Armstrong Sustainable Infrastructure Capital,HASI,NYSE,Renewable energy,-,0.113709586,5,https://www.hannonarmstrong.com,Jeffrey “Jeff” W. Eckel
+Harsco Corporation,HSC,NYSE,Circular economy,1,-,-,http://www.harsco.com/,F. Nicholas Grasberger
+Heritage-Crystal Clean,HCCI,NASDAQ,Circular economy,1,-,-,https://www.crystal-clean.com,Brian Recatto
+Ideal Power,IPWR,NASDAQ,Energy-saving technology,0.25,0.25,-,http://www.idealpower.com/,R. Daniel Brdar
+Itron,ITRI,NASDAQ,Energy-saving technology,-,-,-,https://www.itron.com/,Philip Mezey
+JinkoSolar Holding,JKS,NYSE,Renewable energy,1,-,-,https://www.jinkosolar.com,Kangping Chen
+Johnson Controls,JCI,NYSE,Energy-saving technology,0.2,-,-,https://www.johnsoncontrols.com/,George Oliver
+Livent Corporation,LTHM,NYSE,Energy-saving technology,-,0.4,-,https://livent.com/,Paul Graves
+Lordstown motor,RIDE,NASDAQ,Transportation of the future,-,-,-,https://lordstownmotors.com,Stephen S. Burns
+Nextera Energy Partners,NEP,NYSE,Renewable energy,0.342544922,-,-,https://www.nexteraenergy.com/,James Robo
+NIKOLA,NKLA,NASDAQ,Transportation of the future,-,-,-,http://nikolamotor.com/,Mark Russell
+NIO Limited,NIO,NYSE,Transportation of the future,-,-,-,https://www.nio.com,Bin Li
+NIU Technologies,NIU,NASDAQ,Transportation of the future,0.42325345,-,-,https://www.niu.com,Yan Li
+ON Semiconductor,ON,NASDAQ,Energy-saving technology,-,-,-,http://www.onsemi.com/ ,"Keith Jackson
+"
+Orion Energy Systems,OESX,NASDAQ,Energy-saving technology,-,-,-,https://www.orionlighting.com,Michael W. Altschaefl
+Ormat Technologies,ORA,NYSE,Renewable energy,0.08910988,-,-,https://www.ormat.com/ ,Doron Blachar
+Pentair,PNR,NYSE,Clean water and oceans,-,-,0.8,https://www.pentair.com/,John Stauch
+Plug Power,PLUG,NASDAQ,Transportation of the future,-,-,-,http://www.plugpower.com,Andrew Marsh
+Power Integrations,POWI,NASDAQ,Energy-saving technology,1,-,-,https://www.power.com/,Balu Balakrishnan
+Quantumscape,QS,NASDAQ,Transportation of the future,-,-,-,https://www.quantumscape.com,Jagdeep Singh
+Ranpak Holdings,PACK,NYSE,Circular economy,0.369607576,-,-,https://www.ranpak.com,Omar Asali
+ReneSola,SOL,NYSE,Renewable energy,0.231618947,-,-,http://www.renesolapower.com/,Yumin Liu
+Renewable Energy Group,REGI,NASDAQ,Renewable energy,-,-,-,https://www.regi.com,Cynthia Warner
+Republic Services,RSG,NYSE,Circular economy,1,-,-,http://www.republicservices.com/,Donald Slager
+Research Frontiers,REFR,NASDAQ,Energy-saving technology,-,0.5,-,https://www.smartglass.com,Joseph Harary
+SABESP,SBS,NYSE,Clean water and oceans,-,2.69E-05,5,http://www.sabesp.com.br,Benedito Pinto Ferreira Braga
+Schnitzer Steel Industries,SCHN,NASDAQ,Circular economy,1,-,-,http://www.schnitzersteel.com/,Tamara Lundgren
+SJW Water,SJW,NYSE,Clean water and oceans,-,2.52E-07,0.251506805,https://www.sjwater.com,Eric W. Thornburg
+Solaredge Technologies,SEDG,NASDAQ,Renewable energy,0.939616501,-,-,https://www.solaredge.com/,Guy Sella
+Stericycle,SRCL,NASDAQ,Circular economy,1,-,-,https://www.stericycle.com,Cindy Miller
+Sunnova Energy International,NOVA,NYSE,Renewable energy,-,-,-,https://www.sunnova.com/,William Jackson Berger
+SunPower Corporation,SPWR,NASDAQ,Renewable energy,-,-,-,https://us.sunpower.com/,Thomas Werner
+Sunrun,RUN,NASDAQ,Renewable energy,0.081897703,-,-,http://www.sunrun.com/,Lynn Jurich
+Tattoed chef,TTCF,NASDAQ,Plant-based food,-,-,-,https://tattooedchef.com,Sam Galletti
+Tesla,TSLA,NASDAQ,Transportation of the future,-,-,-,https://www.tesla.com/ ,Elon Musk
+Tetra tech,TTEK,NASDAQ,Clean water and oceans,-,-,-,https://www.tetratech.com/,Dan Batrack
+TPI Composites,TPIC,NASDAQ,Renewable energy,-,-,-,http://www.tpicomposites.com,William Siwek
+Trane Technologies,TT,NYSE,Energy-saving technology,0.7,-,-,https://www.tranetechnologies.com/,Michael Lamach
+Ultralife Batteries,ULBI,NASDAQ,Energy-saving technology,-,0.1,-,https://www.ultralifecorporation.com/,Michael Popielec
+Universal Display Corporation,OLED,NASDAQ,Energy-saving technology,-,-,-,https://oled.com,Steven V. Abramson
+US Ecology,ECOL,NASDAQ,Clean water and oceans,1,5.74E-08,0.057381689,https://www.usecology.com,Jeff Feeler
+Veeco Instruments,VECO,NASDAQ,Energy-saving technology,-,5.00E-01,-,http://www.veeco.com/,William Miller
+Vertex Energy,VTNR,NASDAQ,Circular economy,1,-,-,http://www.vertexenergy.com/,Benjamin Cowart
+Wabtec,WAB,NYSE,Transportation of the future,-,-,-,https://www.wabtec.com/,Rafael Santana
+Waste Connections,WCN,NYSE,Circular economy,1,-,-,http://www.progressivewaste.com/,Worthing F Jackman
+Waste Management,WM,NYSE,Circular economy,1,-,-,https://www.wm.com/,James Fish
+Willdan Group,WLDN,NYSE,Energy-saving technology,-,-,-,http://www.willdan.com/,Thomas Brisbin
+Xylem,XYL,NYSE,Clean water and oceans,-,-,0.27,https://www.xylem.com/,Patrick Decker

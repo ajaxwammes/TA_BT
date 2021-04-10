@@ -37,7 +37,7 @@ pd.set_option('display.width', desired_width)
 class TestPortfolioCreator(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.all_products = pd.read_csv('./data/static_df.csv')
+        self.all_products = pd.read_csv('./data/static_data2.csv', encoding='latin-1')
 
         self.choices = [
             'Renewable energy',

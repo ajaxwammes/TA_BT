@@ -1,0 +1,95 @@
+,Company,Ticker,Market,Industry,KwH per USD,KG CO2 per USD,Gallons water per USD,Analyst_rating,Risk,Trend,Volume
+0,Aemetis,AMTX,NASDAQ,Renewable energy,0.000645042,-,-,1.8,0.1277346624269275,y,y
+1,Algonquin Power & Utilities,AQN,NYSE,Renewable energy,0.019087586,1.56E-07,0.155885399,0.0,0.012645146973668489,y,y
+2,Ameresco,AMRC,NYSE,Energy-saving technology,0.100028761,-,-,1.6,0.04270370459691838,y,y
+3,America Water Works Company,AWK,NYSE,Clean water and oceans,-,1.82E-08,0.018179012,2.2,0.015322335713403225,y,y
+4,American Superconductor Corporation,AMSC,NASDAQ,Energy-saving technology,-,-,-,2.0,0.05445209818253195,y,y
+5,Applied Materials,AMAT,NASDAQ,Energy-saving technology,-,0.5,-,1.9,0.032101267740411374,y,y
+6,Aptiv PLC,APTV,NYSE,Transportation of the future,-,-,-,2.2,0.023323347697858942,y,y
+7,Aqua Metals,AQMS,NASDAQ,Circular economy,-,-,-,1.5,0.09471031902965324,n,y
+8,Arcimoto,FUV,NASDAQ,Transportation of the future,-,-,-,2.2,0.0960515571428728,y,y
+9,Array Technologies,ARRY,NASDAQ,Renewable energy,-,-,-,2.4,0.04034283206122383,n,y
+10,Aspen Aerogels,ASPN,NYSE,Energy-saving technology,-,-,-,2.0,0.04348641796091974,y,n
+11,Atlantica,AY,NASDAQ,Renewable energy,0.383566202,2.78E-06,2.781262189,2.4,0.029682358646527546,y,y
+12,Avangrid,AGR,NYSE,Renewable energy,0.344,-,-,3.2,0.013328746949592423,y,y
+13,Azure Power,AZRE,NYSE,Renewable energy,0.630041367,-,-,2.0,0.043885162388399096,y,y
+14,Badger Meter,BMI,NYSE,Clean water and oceans,1,1.72E-06,1.717782137,2.9,0.022209904273759358,y,n
+15,Ballard Power Systems,BLDP,NASDAQ,Transportation of the future,-,-,-,2.1,0.05837507772786028,y,y
+16,Beam Global,BEEM,NASDAQ,Transportation of the future,-,-,-,2.2,0.08934080690008175,y,y
+17,Beyond Meat,BYND,NASDAQ,Plant-based food,-,-,-,3.0,0.04106471769545544,y,y
+18,Blink Charging,BLNK,NASDAQ,Transportation of the future,1,-,-,2.2,0.10146498218097148,y,y
+19,Brookfield Renewable Partners,BEP,NYSE,Renewable energy,0.875546098,-,-,1.8,0.02216876920242082,y,y
+20,California Water Service Group,CWT,NYSE,Clean water and oceans,-,3.94E-08,0.039376929,3.0,0.01759053831418326,y,n
+21,Canadian Solar,CSIQ,NASDAQ,Renewable energy,1,-,-,2.1,0.04435702017428657,y,y
+22,Capstone Turbine Corporation,CPST,NASDAQ,Energy-saving technology,1,-,-,2.0,0.06550573295717724,y,y
+23,Casella Waste Systems,CWST,NASDAQ,Circular economy,1,-,-,2.0,0.016422460937674813,y,y
+24,Centrais Eletricas Brasileiras,EBR,NYSE,Renewable energy,0.9,-,-,1.0,0.034412025945558304,y,y
+25,Clean Harbors,CLH,NYSE,Circular economy,1,-,-,1.9,0.019323988776297873,y,n
+26,CleanSpark,CLSK,NASDAQ,Energy-saving technology,-,-,-,1.5,0.09019615196747442,n,y
+28,Commercial metals,CMC,NASDAQ,Circular economy,1,-,-,3.0,0.030244148772464504,y,y
+29,Companhia Energética de Minas Gerais,CIG,NYSE,Renewable energy,1,-,-,2.3,0.027932328330802926,n,y
+30,Companhia Paranaense de Energia - COPEL,ELP,NYSE,Renewable energy,1,-,-,3.0,0.030334279428198784,y,y
+31,Consolidated Water,CWCO,NASDAQ,Clean water and oceans,-,4.40E-05,5,2.5,0.023140064143510334,y,n
+32,Covanta Holding Corp,CVA,NYSE,Circular economy,1,-,-,2.1,0.02061401628918234,n,y
+33,Cree,CREE,NASDAQ,Energy-saving technology,-,-,-,2.6,0.044805715803914924,y,y
+34,Daqo New Energy,DQ,NYSE,Renewable energy,1,-,-,1.7,0.07341656369001169,y,y
+35,Darling Ingredients,DAR,NYSE,Circular economy,-,-,-,1.8,0.030122693904142805,y,y
+36,Digi International,DGII,NASDAQ,Energy-saving technology,-,-,-,1.9,0.03744410530272465,y,n
+37,Eaton Corporation,ETN,NYSE,Energy-saving technology,-,-,-,2.0,0.01575551220693843,y,y
+38,Ecolab,ECL,NYSE,Clean water and oceans,-,-,0.16,2.6,0.017444322654654777,y,y
+39,Energy Recovery,ERII,NASDAQ,Clean water and oceans,-,-,-,1.7,0.028249369676322002,y,n
+40,Enphase Energy,ENPH,NASDAQ,Renewable energy,-,-,-,2.2,0.049228168192420894,y,y
+41,EnerSys,ENS,NYSE,Energy-saving technology,-,0.17,-,2.0,0.02339335676787977,y,n
+42,Evoqua,AQUA,NASDAQ,Clean water and oceans,-,7.60E-08,0.076042026,2.1,0.029124571954335904,y,y
+43,First Solar,FSLR,NASDAQ,Renewable energy,1,-,-,2.9,0.034265554696401565,y,y
+44,Fisker,FSR,NYSE,Transportation of the future,-,-,-,2.3,0.07812027308798249,y,y
+45,Flux Power Holdings,FLUX,NASDAQ,Energy-saving technology,-,0.1,-,2.0,0.0794714543269381,y,n
+46,Green Plains,GPRE,NASDAQ,Renewable energy,0.25,0.25,-,2.0,0.04811358796686055,y,y
+47,Hannon Armstrong Sustainable Infrastructure Capital,HASI,NYSE,Renewable energy,-,0.113709586,5,2.0,0.031861525165380065,y,y
+48,Harsco Corporation,HSC,NYSE,Circular economy,1,-,-,2.0,0.042382909163131324,y,y
+49,Heritage-Crystal Clean,HCCI,NASDAQ,Circular economy,1,-,-,1.4,0.03725332575112599,y,n
+50,Ideal Power,IPWR,NASDAQ,Energy-saving technology,0.25,0.25,-,2.0,0.09214487066409982,n,n
+51,Itron,ITRI,NASDAQ,Energy-saving technology,-,-,-,1.9,0.036576830196815104,y,y
+52,JinkoSolar Holding,JKS,NYSE,Renewable energy,1,-,-,2.9,0.06132866289215094,y,y
+53,Johnson Controls,JCI,NYSE,Energy-saving technology,0.2,-,-,2.2,0.014371373769028745,y,y
+54,Livent Corporation,LTHM,NYSE,Energy-saving technology,-,0.4,-,2.8,0.04558160998261957,y,y
+55,Lordstown motor,RIDE,NASDAQ,Transportation of the future,-,-,-,2.4,0.06850052439300906,y,y
+56,Nextera Energy Partners,NEP,NYSE,Renewable energy,0.342544922,-,-,2.2,0.024565989798974765,y,y
+57,NIKOLA,NKLA,NASDAQ,Transportation of the future,-,-,-,2.7,0.07331884148422887,y,y
+58,NIO Limited,NIO,NYSE,Transportation of the future,-,-,-,2.3,0.054258069321502775,y,y
+59,NIU Technologies,NIU,NASDAQ,Transportation of the future,0.42325345,-,-,1.7,0.0590735253792576,y,y
+60,ON Semiconductor,ON,NASDAQ,Energy-saving technology,-,-,-,2.2,0.029214338307836662,y,y
+61,Orion Energy Systems,OESX,NASDAQ,Energy-saving technology,-,-,-,2.0,0.04508643774828694,y,y
+62,Ormat Technologies,ORA,NYSE,Renewable energy,0.08910988,-,-,2.3,0.035216220125550604,y,y
+63,Pentair,PNR,NYSE,Clean water and oceans,-,-,0.8,2.6,0.016827273554403322,y,y
+64,Plug Power,PLUG,NASDAQ,Transportation of the future,-,-,-,2.2,0.07483925328606833,y,y
+65,Power Integrations,POWI,NASDAQ,Energy-saving technology,1,-,-,2.3,0.029397799174771755,y,n
+66,Quantumscape,QS,NASDAQ,Transportation of the future,-,-,-,2.5,0.12025061859720577,y,y
+67,Ranpak Holdings,PACK,NYSE,Circular economy,0.369607576,-,-,2.0,0.03265849098270845,y,n
+68,ReneSola,SOL,NYSE,Renewable energy,0.231618947,-,-,2.3,0.11051419394362136,y,y
+69,Renewable Energy Group,REGI,NASDAQ,Renewable energy,-,-,-,2.1,0.04958048443755893,y,y
+70,Republic Services,RSG,NYSE,Circular economy,1,-,-,2.2,0.011970636057425672,y,y
+71,Research Frontiers,REFR,NASDAQ,Energy-saving technology,-,0.5,-,0.0,0.05567719478918693,y,n
+72,SABESP,SBS,NYSE,Clean water and oceans,-,2.69E-05,5,2.0,0.027200491324430948,n,y
+73,Schnitzer Steel Industries,SCHN,NASDAQ,Circular economy,1,-,-,3.0,0.03466588624329824,y,n
+74,SJW Water,SJW,NYSE,Clean water and oceans,-,2.52E-07,0.251506805,2.7,0.01763777045010816,y,n
+75,Solaredge Technologies,SEDG,NASDAQ,Renewable energy,0.939616501,-,-,2.7,0.04409980600492376,y,y
+76,Stericycle,SRCL,NASDAQ,Circular economy,1,-,-,2.4,0.015931479599890094,n,n
+77,Sunnova Energy International,NOVA,NYSE,Renewable energy,-,-,-,1.8,0.056250706272612576,y,y
+78,SunPower Corporation,SPWR,NASDAQ,Renewable energy,-,-,-,3.1,0.06737118839946142,y,y
+79,Sunrun,RUN,NASDAQ,Renewable energy,0.081897703,-,-,2.0,0.05427786109303623,y,y
+80,Tattoed chef,TTCF,NASDAQ,Plant-based food,-,-,-,2.5,0.04170547673924174,y,y
+81,Tesla,TSLA,NASDAQ,Transportation of the future,-,-,-,2.9,0.04340925169674951,y,y
+82,Tetra tech,TTEK,NASDAQ,Clean water and oceans,-,-,-,2.1,0.02353945672218769,y,n
+83,TPI Composites,TPIC,NASDAQ,Renewable energy,-,-,-,2.2,0.055886755207616594,y,y
+84,Trane Technologies,TT,NYSE,Energy-saving technology,0.7,-,-,2.6,0.016533871123876633,y,y
+85,Ultralife Batteries,ULBI,NASDAQ,Energy-saving technology,-,0.1,-,0.0,0.04395701994829278,y,n
+86,Universal Display Corporation,OLED,NASDAQ,Energy-saving technology,-,-,-,2.3,0.025934131613711154,y,y
+87,US Ecology,ECOL,NASDAQ,Clean water and oceans,1,5.74E-08,0.057381689,2.0,0.024326238914771006,n,n
+88,Veeco Instruments,VECO,NASDAQ,Energy-saving technology,-,5.00E-01,-,1.7,0.026688466080916805,n,y
+89,Vertex Energy,VTNR,NASDAQ,Circular economy,1,-,-,2.3,0.08657473019637739,y,y
+90,Wabtec,WAB,NYSE,Transportation of the future,-,-,-,2.3,0.023494931788886897,n,y
+91,Waste Connections,WCN,NYSE,Circular economy,1,-,-,1.7,0.009054943474414366,y,y
+92,Waste Management,WM,NYSE,Circular economy,1,-,-,2.5,0.011456605666846307,y,y
+93,Willdan Group,WLDN,NYSE,Energy-saving technology,-,-,-,1.3,0.03595877870670947,y,n
+94,Xylem,XYL,NYSE,Clean water and oceans,-,-,0.27,2.9,0.014858641844290631,y,y

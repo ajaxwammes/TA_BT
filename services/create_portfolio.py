@@ -11,8 +11,7 @@ import numpy as np
 import pandas as pd
 
 from services.configs import risk_thresholds_levels as RTL
-from services.utils.utils import analyst_ratings
-from services.utils.utils import risk
+from services.utils.utils import analyst_ratings, risk, company_ceo_url
 
 
 class PortfolioCreator:
@@ -23,6 +22,9 @@ class PortfolioCreator:
     def analyst_ratings(self):
         if 'Analyst_rating' not in self.environment.columns:
             self.environment = analyst_ratings(self.environment)
+
+    def company_ceo_url(self):
+        self.environment = company_ceo_url(self.environment)
 
     def risk_clean(self):
         if 'Risk' not in self.environment.columns:
@@ -172,7 +174,9 @@ class PortfolioCreator:
     def run(self, money_in_portfolio, risk_level, all_products):
         self.analyst_ratings()
         self.risk_clean()
-        self.portfolio_lmh(money_in_portfolio,risk_level)
-        self.portfolio_check(money_in_portfolio,risk_level,all_products)
-        self.value_per_stock(money_in_portfolio)
+        #self.portfolio_lmh(money_in_portfolio, risk_level)
+        #self.portfolio_check(money_in_portfolio, risk_level, all_products)
+        #self.value_per_stock(money_in_portfolio)
+        self.company_ceo_url()
+        self.environment.to_csv('./data/ceo_url.csv')
         return self.environment

@@ -40,14 +40,14 @@ rsi_threshold = 73
 # after rebalancing == to the growth of the stock. The low the value the less you sell off (let the runners run)
 rebalance_perc = 0.75
 
-#analyst rating threshold, after which to sell a stock (1 best -5 worst)
+#analyst rating threshold, after which to sell a stock (1 best - 5 worst)
 analyst_rating_threshold = 3
 
 """ TECHNICAL INDICATORS """
 
 #ATR
 #by how much should the ATR be multipied before a stock is sold / rebalanced should be 11
-atr_multiplier = 1
+atr_multiplier = 11
 
 #what n is the ATR looking at
 atr_n = 80

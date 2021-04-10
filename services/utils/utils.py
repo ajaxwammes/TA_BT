@@ -4,6 +4,9 @@ from futures3.thread import ThreadPoolExecutor
 import pandas as pd
 import pandas_datareader.data as web
 import requests
+import http.client
+import json
+#from iexfinance.stocks import Stock
 
 from services.configs import risk_thresholds_levels as RTL
 
@@ -55,3 +58,22 @@ def risk(ticker):
         trend = 'N/A'
         volume = 'N/A'
     return vol, trend, volume
+
+'''def company_ceo_url(environment):
+    url_list = []
+    ceo_list = []
+    companylist = list(environment['Ticker'])
+    for Value in companylist:
+        calc = Stock(Value, token='pk_e15df711ca964246a7c344d4b7ca9164')
+        x = calc.get_company()
+        url = x['website']
+        url_list.append(url)
+        ceo = x['CEO']
+        ceo_list.append(ceo)
+    environment['url'] = url_list
+    environment['CEO'] = ceo_list
+    return environment'''
+
+
+
+

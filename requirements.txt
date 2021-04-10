@@ -9,3 +9,4 @@ ibapi
 pyEX
 matplotlib
 holidays
+iexfinance
