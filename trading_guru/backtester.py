@@ -72,14 +72,14 @@ con_thread = threading.Thread(target=websocket_con, daemon=True)
 con_thread.start()
 time.sleep(1) # some latency added to ensure that the connection is established
 
-#Financial products
-tickers = ['AMRC','ASPN','CPST','CREE','IPWR','ITRI','ON','OESX',
-           'APTV','FUV','BLDP','BEEM','BLNK','FSR','RIDE','NKLA','PLUG',
-           'AMTX','AQN','ARRY','AY','AZRE','BEP','CSIQ','ELP',
-           'AWK','BMI','CWT','CWCO','ERII','AQUA',
-           'AQMS','CWST','CLH','CMC',
-           'BYND','TTCF'
-           ]
+#Financial products (CW, CE, EST, ToF, RE, PBF) - low risk
+tickers = ['AWK', 'BMI', 'CWT', 'CWCO', 'ECL', 'ERII', 'AQUA', 'PNR', 'SBS', 'SJW', 'TTEK', 'XYL',
+           'CWST', 'CLH', 'DAR', 'HSC', 'RSG', 'VTNR', 'WCN', 'WM', 'HCCI', 'AQMS',
+           'AMRC', 'AMSC', 'AMAT', 'CPST', 'WLDN', 'ITRI',
+           'APTV', 'FUV', 'BEEM', 'NIU', 'BLDP', 'BLNK',
+           'AMTX', 'BEP', 'NOVA', 'HASI', 'EBR', 'DQ',
+           'BYND', 'TTCF'
+            ]
 
 
 #Capital per stock USD
@@ -107,7 +107,7 @@ def get_data():
     data = {}
     for ticker in tickers:
         print("Fetching data for", ticker)
-        histData(tickers.index(ticker), usTechStk(ticker), '1 Y', '1 hour')
+        histData(tickers.index(ticker), usTechStk(ticker), '1 Y', '15 mins')
         time.sleep(10)
         data[ticker] = data_in_df(tickers, ticker)
     return data
@@ -141,13 +141,15 @@ for ticker in tickers:
     ohlc_dict[ticker]["bollBnd_width"] = TI.bollBnd(ohlc_dict[ticker])['BB_width']
     ohlc_dict[ticker]["bollBnd_up"] = TI.bollBnd(ohlc_dict[ticker])['BB_up']
     ohlc_dict[ticker]["bollBnd_dn"] = TI.bollBnd(ohlc_dict[ticker])['BB_dn']
-    ohlc_dict[ticker]["bollBnd_mean"] = TI.bollBnd(ohlc_dict[ticker])['BB_mean']
+    ohlc_dict[ticker]["b_band_mean"] = TI.bollBnd(ohlc_dict[ticker])['BB_mean']
+    ohlc_dict[ticker]["b_band_width"] = TI.bollBnd(ohlc_dict[ticker])['BB_width']
+
+
     ohlc_dict[ticker].dropna(inplace=True)
     trade_count[ticker] = 0
     tickers_signal[ticker] = ""
     tickers_ret[ticker] = [0]
     trade_data[ticker] = {}
-        
 
 
 #calculating return of strategy
@@ -157,38 +159,29 @@ for ticker in tickers:
         if tickers_signal[ticker] == "":
             tickers_ret[ticker].append(0)
             if ohlc_dict[ticker]["macd"][i]> ohlc_dict[ticker]["signal"][i] and \
-                ohlc_dict[ticker]["stoch"][i]> 30 and \
-               ohlc_dict[ticker]["stoch"][i] > ohlc_dict[ticker]["stoch"][i-1]:
+            ohlc_dict[ticker]["stoch"][i]> 30 and \
+            ohlc_dict[ticker]["stoch"][i] > ohlc_dict[ticker]["stoch"][i-1]:
                    tickers_signal[ticker] = "Buy"
                    trade_count[ticker] += 1
                    trade_data[ticker][trade_count[ticker]] = [ohlc_dict[ticker]["Close"][i]]
-                
+
         elif tickers_signal[ticker] == "Buy":
-            if ohlc_dict[ticker]["Open"][i] >= ohlc_dict[ticker]["Close"][i-1] + ohlc_dict[ticker]["atr"][i-1]:
+            if ohlc_dict[ticker]["rsi"][i] > 76 and \
+            ohlc_dict[ticker]["b_band_width"][i] < ohlc_dict[ticker]["b_band_mean"][i]:
                 tickers_signal[ticker] = ""
-                trade_data[ticker][trade_count[ticker]].append((ohlc_dict[ticker]["Open"][i] - ohlc_dict[ticker]["slippage"][i]))
+                trade_data[ticker][trade_count[ticker]].append((ohlc_dict[ticker]["Close"][i] - ohlc_dict[ticker]["slippage"][i]))
                 trade_count[ticker]+=1
-                tickers_ret[ticker].append((ohlc_dict[ticker]["Open"][i]
+                tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i]
                                              -ohlc_dict[ticker]["slippage"][i])
                                             /(ohlc_dict[ticker]["Close"][i-1])-1)
 
 
-            elif ohlc_dict[ticker]["High"][i] >= ohlc_dict[ticker]["Close"][i-1] + ohlc_dict[ticker]["atr"][i-1]:
-                tickers_signal[ticker] = ""
-                trade_data[ticker][trade_count[ticker]].append((ohlc_dict[ticker]["Close"][i-1] + ohlc_dict[ticker]["atr"][i-1] - ohlc_dict[ticker]["slippage"][i]))
-                trade_count[ticker]+=1
-                tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i-1]
-                                             +ohlc_dict[ticker]["atr"][i-1]
-                                             -ohlc_dict[ticker]["slippage"][i-1])
-                                           /(ohlc_dict[ticker]["Close"][i-1])-1)
-
-                                               
             else:
                 tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i]/ohlc_dict[ticker]["Close"][i-1])-1)
-                
+
     if trade_count[ticker]%2 != 0:
         trade_data[ticker][trade_count[ticker]].append(ohlc_dict[ticker]["Close"][i])
-                    
+
     ohlc_dict[ticker]["ret"] = np.array(tickers_ret[ticker])
 
 
@@ -196,8 +189,8 @@ for ticker in tickers:
 strategy_df = pd.DataFrame()
 for ticker in tickers:
     strategy_df[ticker] = ohlc_dict[ticker]["ret"]
-  
-#assuming that there is equal amount of capital allocated/invested to each stock    
+
+#assuming that there is equal amount of capital allocated/invested to each stock
 strategy_df["ret"] = strategy_df.mean(axis=1)
 
 #>>>>>>>>>>>>>>>>>>>> Get Intra-day KPIs of strategy <<<<<<<<<<<<<<<<<<<<<<<
@@ -232,7 +225,7 @@ mrpwt = sum(KPI_ID_df.T['MR Per WT'])/len(KPI_ID_df.T['MR Per WT'])
 mrplt = sum(KPI_ID_df.T['MR Per LT'])/len(KPI_ID_df.T['MR Per LT'])
 
 IntraDay_Indicators = pd.DataFrame([wrs, mrpt, mrpwt, mrplt],
-                      index=["Win Rate","MR Per Trade","MR Per WT", "MR Per LT"])      
+                      index=["Win Rate","MR Per Trade","MR Per WT", "MR Per LT"])
 print(IntraDay_Indicators.T)
 
 
@@ -245,13 +238,13 @@ sortinos = {}
 max_drawdown = {}
 total_trades_ind = {}
 for ticker in tickers:
-    print("calculating KPIs for ",ticker)      
+    print("calculating KPIs for ",ticker)
     cagr[ticker] =  KL.CAGR(ohlc_dict[ticker])
     sharpe[ticker] =  KL.sharpe(ohlc_dict[ticker])
     sortinos[ticker] =  KL.sortino(ohlc_dict[ticker])
     max_drawdown[ticker] =  KL.max_dd(ohlc_dict[ticker])
-    total_trades_ind[ticker] = trade_count[ticker]  
-    
+    total_trades_ind[ticker] = trade_count[ticker]
+
 KPI_df = pd.DataFrame([cagr,sharpe,sortinos,max_drawdown,total_trades_ind],index=["Return","Sharpe","Sortino","Max Drawdown","Total Trades"])
 print(KPI_df.T)
 
