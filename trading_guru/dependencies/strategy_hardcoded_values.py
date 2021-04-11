@@ -16,12 +16,14 @@ stocks_n = 40
 port = 7497
 
 """ STRATEGY """
-#companies selected -> comes from create portfolio script
-ticker_symbols = ["WCN", "AQN", "RSG", "WM", "AWK", "OLED", "CWST", "SJW", "ETN", "CWT",
-           "BMI", "BEP", "NEP", "TTEK", "CWCO", "CWEN", "APTV", "CLH", "POWI",
-           "HASI", "ON", "SBS", "ERII", "ITRI", "AY", "TRN", "DAR", "AQUA", "CVA",
-           "ORA", "AMRC", "WLDN", "HCCI", "TPIC", "CSIQ", "AZRE", "REGI",
-           "OESX", "ASPN", "NOVA", "AMSC", "DQ", "PLUG", "VTNR", "AQMS", "BEEM"]
+#Financial products (CW, CE, EST, ToF, RE, PBF) - low risk
+ticker_symbols = ['AWK', 'BMI', 'CWT', 'CWCO', 'ECL', 'ERII', 'AQUA', 'PNR', 'SBS', 'SJW', 'TTEK', 'XYL',
+           'CWST', 'CLH', 'DAR', 'HSC', 'RSG', 'VTNR', 'WCN', 'WM', 'HCCI', 'AQMS',
+           'AMRC', 'AMSC', 'AMAT', 'CPST', 'WLDN', 'ITRI',
+           'APTV', 'FUV', 'BEEM', 'NIU', 'BLDP', 'BLNK',
+           'AMTX', 'BEP', 'NOVA', 'HASI', 'EBR', 'DQ',
+           'BYND', 'TTCF'
+            ]
 
 
 #the duration between scans / ticker size (1,3,5,10,15,30)
@@ -34,7 +36,7 @@ ticker_size_mins = str(ticker_size) + ' ' + 'mins'
 stoch_threshold = 30
 
 #threshold value for RSI
-rsi_threshold = 73
+rsi_threshold = 76
 
 #percentage sell-off compared to ATR distance. If value is 1 then it rebalances a 100%
 # after rebalancing == to the growth of the stock. The low the value the less you sell off (let the runners run)
