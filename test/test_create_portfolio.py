@@ -52,7 +52,7 @@ class TestPortfolioCreator(unittest.TestCase):
         self.fresh_environment = self.all_products[self.all_products.Industry.isin(self.choices)]
 
         self.customerID = 1002
-        self.risk_level = 2
+        self.risk_level = 1
         self.money_in_portfolio = 2000
 
 

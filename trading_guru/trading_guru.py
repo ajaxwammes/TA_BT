@@ -131,15 +131,16 @@ def data_in_df(tickers, ticker):
         return df
 
 
-def buy_conditions(df, ticker, quantity):
+def buy_conditions(ord_df, df, ticker, quantity):
     try:
+        #print(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'BUY')])
         analyst_rating = features.analyst_ratings(ticker)
         if df["macd"][-1] > df["signal"][-1] and \
         df["stoch"][-1] > SHV.stoch_threshold and \
         df["stoch"][-1] > df["stoch"][-2] and \
         analyst_rating < SHV.analyst_rating_threshold and \
         account_value[-1] > capital_ps and \
-        df.index[-1][-8:] != '21:45:00' and df.index[-1][-8:] != '20:45:00':
+        len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'BUY')]) == 0:
             print('buying',ticker)
             app.reqIds(-1)
             time.sleep(2)
@@ -160,12 +161,12 @@ def sell_conditions(ord_df, df, pos_df, ticker, quantity):
     analyst_rating = features.analyst_ratings(ticker)
     #print('width:', df["b_band_width"][-1],'mean', df["b_band_mean"][-1],'rsi:',df["rsi"][-1])
     if float(analyst_rating) > SHV.analyst_rating_threshold and \
-    df.index[-1][-8:] != '21:45:00' and df.index[-1][-8:] != '20:45:00':
+    len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'SELL')]) == 1:
         print('selling', ticker, 'triggered by analyst ratings')
         sell(ord_df, pos_df, ticker, orders)
 
     elif df["rsi"][-1] > SHV.rsi_threshold and df["b_band_width"][-1] < df["b_band_mean"][-1] and \
-    df.index[-1][-8:] != '21:45:00' and df.index[-1][-8:] != '20:45:00':
+    len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'SELL')]) == 1:
         print('selling', ticker, 'triggered by b_bands + RSI')
         sell(ord_df, pos_df, ticker, orders)
     else:
@@ -210,6 +211,7 @@ def main():
     app.reqOpenOrders()
     time.sleep(2)
     ord_df = app.order_df
+    ord_df.drop_duplicates(inplace=True, ignore_index=True)
     print('Account value:', account_value[-1])
     if account_value[-1] < capital_ps:
         print("All money is invested. TG won't make any more trades until sells are made")
@@ -235,7 +237,7 @@ def main():
             #when you DON'T own the stock
             if ticker not in pos_df["Symbol"].tolist() or \
                pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] == 0:
-                    buy_conditions(df, ticker, quantity)
+                    buy_conditions(ord_df, df, ticker, quantity)
 
             #when you DO own the stock
             elif pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] > 0:

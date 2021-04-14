@@ -2,6 +2,7 @@ import requests
 import time
 from . import strategy_hardcoded_values as SHV
 import datetime, pytz, holidays
+from datetime import datetime, time
 
 def analyst_ratings(ticker):
     try:
@@ -29,16 +30,25 @@ def what_tickers(app):
     return tickers
 
 
-'''def afterHours(now = None):
+'''def is_time_between(begin_time, end_time, check_time=None):
+    # If check time is not given, default to current UTC time
+    check_time = check_time or datetime.utcnow().time()
+    if begin_time < end_time:
+        return check_time >= begin_time and check_time <= end_time
+    else: # crosses midnight
+        return check_time >= begin_time or check_time <= end_time
+
+
+def afterHours(now = None):
     tz = pytz.timezone('US/Eastern')
     us_holidays = holidays.US()
+    now = datetime.datetime.now(tz)
     if not now:
-        now = datetime.datetime.now(tz)
-    openTime = datetime.time(hour = 9, minute = 30, second = 0)
-    closeTime = datetime.time(hour = 16, minute = 0, second = 0)
+        openTime = datetime.time(hour = 9, minute = 30, second = 0)
+        closeTime = datetime.time(hour = 16, minute = 0, second = 0)
     # If a holiday
     if now.strftime('%Y-%m-%d') in us_holidays:
-        return True
+        print('true')
     # If before 0930 or after 1600
     if (now.time() < openTime) or (now.time() > closeTime):
         return True
