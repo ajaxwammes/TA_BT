@@ -2,7 +2,6 @@ import requests
 import time
 from . import strategy_hardcoded_values as SHV
 import datetime, pytz, holidays
-from datetime import datetime, time
 
 def analyst_ratings(ticker):
     try:
