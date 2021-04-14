@@ -28,10 +28,18 @@ from dependencies import features
 account_value = []
 
 #the capital per stock
-capital_ps = SHV.capital_total / SHV.stocks_n
+def capital():
+    capital_ps = None
+    while capital_ps is None:
+        try:
+            capital_ps = account_value[0] / SHV.stocks_n
+        except:
+            pass
+        return float(capital_ps)
+
 
 class TradeApp(EWrapper, EClient): 
-    def __init__(self): 
+    def __init__(self):
         EClient.__init__(self, self) 
         self.data = {}
         self.pos_df = pd.DataFrame(columns=['Account', 'Symbol', 'SecType',
@@ -139,7 +147,7 @@ def buy_conditions(ord_df, df, ticker, quantity):
         df["stoch"][-1] > SHV.stoch_threshold and \
         df["stoch"][-1] > df["stoch"][-2] and \
         analyst_rating < SHV.analyst_rating_threshold and \
-        account_value[-1] > capital_ps and \
+        account_value[-1] > capital() and \
         len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'BUY')]) == 0:
             print('buying',ticker)
             app.reqIds(-1)
@@ -213,7 +221,7 @@ def main():
     ord_df = app.order_df
     ord_df.drop_duplicates(inplace=True, ignore_index=True)
     print('Account value:', account_value[-1])
-    if account_value[-1] < capital_ps:
+    if account_value[-1] < capital():
         print("All money is invested. TG won't make any more trades until sells are made")
     ord_df.drop_duplicates(inplace=True, ignore_index=True)
     for ticker in tickers:
@@ -230,7 +238,7 @@ def main():
             df["b_band_width"] = technical_indicators.bollBnd(df)["BB_width"]
             df["b_band_mean"] = technical_indicators.bollBnd(df)["BB_mean"]
             df.dropna(inplace=True)
-            quantity = int(capital_ps/df["Close"][-1])
+            quantity = int(capital()/df["Close"][-1])
             if quantity == 0:
                 continue
 
