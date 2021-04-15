@@ -1,6 +1,3 @@
-#how much money is a customer putting in the algorithm
-capital_total = 52922
-
 #how long should the code run for (in days)
 secs_day = 86400
 run_duration = secs_day*31
@@ -13,7 +10,7 @@ stocks_n = 40
 #TWS money trading:7496
 #IB Gateway paper trading: 4002
 #IB Gateway money trading: 4001
-port = 4002
+port = 7497
 
 """ STRATEGY """
 #Financial products (CW, CE, EST, ToF, RE, PBF) - low risk

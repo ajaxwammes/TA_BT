@@ -25,17 +25,8 @@ from dependencies import technical_indicators
 from dependencies import order_types
 from dependencies import features
 
-account_value = []
 
-#the capital per stock
-def capital():
-    capital_ps = None
-    while capital_ps is None:
-        try:
-            capital_ps = account_value[0] / SHV.stocks_n
-        except:
-            pass
-        return float(capital_ps)
+account_value = []
 
 
 class TradeApp(EWrapper, EClient): 
@@ -61,7 +52,7 @@ class TradeApp(EWrapper, EClient):
     def nextValidId(self, orderId):
         super().nextValidId(orderId)
         self.nextValidOrderId = orderId
-        print("NextValidId:", orderId)
+        #print("NextValidId:", orderId)
         
     def position(self, account, contract, position, avgCost):
         super().position(account, contract, position, avgCost)
@@ -138,8 +129,22 @@ def data_in_df(tickers, ticker):
             continue
         return df
 
+#the capital per stock
+def capital(pos_df):
+    capital_ps = None
+    while capital_ps is None:
+        try:
+            money_invested = pos_df['Position']*pos_df['Avg cost']
+            money_invested_sum = sum(money_invested)
+            print('Money invested:', round(money_invested_sum,2))
+            total_money = account_value[-1] + money_invested_sum
+            capital_ps = total_money / SHV.stocks_n
+        except:
+            pass
+        return float(capital_ps)
 
-def buy_conditions(ord_df, df, ticker, quantity):
+
+def buy_conditions(ord_df, investment_per_stock, df, ticker, quantity):
     try:
         #print(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'BUY')])
         analyst_rating = features.analyst_ratings(ticker)
@@ -147,7 +152,7 @@ def buy_conditions(ord_df, df, ticker, quantity):
         df["stoch"][-1] > SHV.stoch_threshold and \
         df["stoch"][-1] > df["stoch"][-2] and \
         analyst_rating < SHV.analyst_rating_threshold and \
-        account_value[-1] > capital() and \
+        account_value[-1] > investment_per_stock and \
         len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'BUY')]) == 0:
             print('buying',ticker)
             app.reqIds(-1)
@@ -206,58 +211,63 @@ def limitorder_check(ord_df, ticker, df, quantity):
 
 
 def main():
-    app.data = {}
-    app.pos_df = pd.DataFrame(columns=['Account', 'Symbol', 'SecType', 'Currency', 'Position', 'Avg cost'])
-    app.order_df = pd.DataFrame(columns=['PermId', 'ClientId', 'OrderId', 'Account', 'Symbol', 'SecType',
-                                         'Exchange', 'Action', 'OrderType', 'TotalQty', 'CashQty', 'LmtPrice',
-                                         'AuxPrice', 'Status'])
-    app.reqPositions()
-    time.sleep(2)
-    pos_df = app.pos_df
-    pos_df.drop_duplicates(inplace=True, ignore_index=True)
-    tickers = features.what_tickers(app)
-    app.reqOpenOrders()
-    time.sleep(2)
-    ord_df = app.order_df
-    ord_df.drop_duplicates(inplace=True, ignore_index=True)
-    print('Account value:', account_value[-1])
-    if account_value[-1] < capital():
-        print("All money is invested. TG won't make any more trades until sells are made")
-    ord_df.drop_duplicates(inplace=True, ignore_index=True)
-    for ticker in tickers:
-        print("scanning ticker.....", ticker)
-        histData(tickers.index(ticker), usTechStk(ticker), '1 M', SHV.ticker_size_mins)
-        time.sleep(3)
-        df = data_in_df(tickers, ticker)
-        if isinstance(df, pd.DataFrame):
-            df["stoch"] = technical_indicators.stochOscltr(df)
-            df["macd"] = technical_indicators.MACD(df)["MACD"]
-            df["signal"] = technical_indicators.MACD(df)["Signal"]
-            df["atr"] = technical_indicators.atr(df)
-            df["rsi"] = technical_indicators.rsi(df)
-            df["b_band_width"] = technical_indicators.bollBnd(df)["BB_width"]
-            df["b_band_mean"] = technical_indicators.bollBnd(df)["BB_mean"]
-            df.dropna(inplace=True)
-            quantity = int(capital()/df["Close"][-1])
-            if quantity == 0:
-                continue
+    print('Scan:', features.current_time())
+    if features.afterHours() == False:
+        app.data = {}
+        app.pos_df = pd.DataFrame(columns=['Account', 'Symbol', 'SecType', 'Currency', 'Position', 'Avg cost'])
+        app.order_df = pd.DataFrame(columns=['PermId', 'ClientId', 'OrderId', 'Account', 'Symbol', 'SecType',
+                                             'Exchange', 'Action', 'OrderType', 'TotalQty', 'CashQty', 'LmtPrice',
+                                             'AuxPrice', 'Status'])
+        app.reqPositions()
+        time.sleep(2)
+        pos_df = app.pos_df
+        pos_df.drop_duplicates(inplace=True, ignore_index=True)
+        tickers = features.what_tickers(app)
+        app.reqOpenOrders()
+        time.sleep(2)
+        ord_df = app.order_df
+        ord_df.drop_duplicates(inplace=True, ignore_index=True)
+        print('Account value:', round(account_value[-1], 2))
+        investment_per_stock = capital(pos_df)
+        if account_value[-1] < investment_per_stock:
+            print("All money is invested. TG will only look for sell orders")
+        ord_df.drop_duplicates(inplace=True, ignore_index=True)
+        for ticker in tickers:
+            print("scanning ticker.....", ticker)
+            histData(tickers.index(ticker), usTechStk(ticker), '1 M', SHV.ticker_size_mins)
+            time.sleep(3)
+            df = data_in_df(tickers, ticker)
+            if isinstance(df, pd.DataFrame):
+                df["stoch"] = technical_indicators.stochOscltr(df)
+                df["macd"] = technical_indicators.MACD(df)["MACD"]
+                df["signal"] = technical_indicators.MACD(df)["Signal"]
+                df["atr"] = technical_indicators.atr(df)
+                df["rsi"] = technical_indicators.rsi(df)
+                df["b_band_width"] = technical_indicators.bollBnd(df)["BB_width"]
+                df["b_band_mean"] = technical_indicators.bollBnd(df)["BB_mean"]
+                df.dropna(inplace=True)
+                quantity = int(investment_per_stock/df["Close"][-1])
+                if quantity == 0:
+                    continue
 
-            #when you DON'T own the stock
-            if ticker not in pos_df["Symbol"].tolist() or \
-               pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] == 0:
-                    buy_conditions(ord_df, df, ticker, quantity)
+                #when you DON'T own the stock
+                if ticker not in pos_df["Symbol"].tolist() or \
+                   pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] == 0:
+                        buy_conditions(ord_df, investment_per_stock, df, ticker, quantity)
 
-            #when you DO own the stock
-            elif pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] > 0:
-                sell_conditions(ord_df, df, pos_df, ticker, quantity)
+                #when you DO own the stock
+                elif pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] > 0:
+                    sell_conditions(ord_df, df, pos_df, ticker, quantity)
 
-
-        else:
-            print(ticker, 'does not give a DF')
-            pass
+            else:
+                print(ticker, 'does not give a DF')
+                pass
+    else:
+        print('Market is closed')
 
 #How long should the code sleep in between runs (900sec sleep time = 15min)
 while True:
     main()
     print('>>>>>>>>>>>>> Check done, now going to sleep <<<<<<<<<<<<<<<<<<<')
+    print('  ')
     time.sleep(60*SHV.ticker_size)
