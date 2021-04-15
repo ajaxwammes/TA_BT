@@ -10,7 +10,7 @@ stocks_n = 40
 #TWS money trading:7496
 #IB Gateway paper trading: 4002
 #IB Gateway money trading: 4001
-port = 7497
+port = 4002
 
 """ STRATEGY """
 #Financial products (CW, CE, EST, ToF, RE, PBF) - low risk
