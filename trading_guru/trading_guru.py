@@ -235,7 +235,7 @@ def main():
         for ticker in tickers:
             print("scanning ticker.....", ticker)
             histData(tickers.index(ticker), usTechStk(ticker), '1 M', SHV.ticker_size_mins)
-            time.sleep(3)
+            time.sleep(2)
             df = data_in_df(tickers, ticker)
             if isinstance(df, pd.DataFrame):
                 df["stoch"] = technical_indicators.stochOscltr(df)
@@ -265,9 +265,12 @@ def main():
     else:
         print('Market is closed')
 
-#How long should the code sleep in between runs (900sec sleep time = 15min)
+#Running the code + smart sleep
 while True:
-    main()
-    print('>>>>>>>>>>>>> Check done, now going to sleep <<<<<<<<<<<<<<<<<<<')
-    print('  ')
-    time.sleep(60*SHV.ticker_size)
+    minute_count = features.current_time_min()
+    if int(minute_count) not in {0, 15, 30, 45}:
+        time.sleep(3)
+    else:
+        main()
+        print('>>>>>>>>>>>>> Check done, now going to sleep <<<<<<<<<<<<<<<<<<<')
+        print('  ')

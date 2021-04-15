@@ -38,6 +38,13 @@ def current_time():
     dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
     return dt_string
 
+def current_time_min():
+    tz = timezone('US/Eastern')
+    now = dd.now(tz)
+    dt_string = now.strftime("%M")
+    return dt_string
+
+
 def afterHours():
     tz = pytz.timezone('US/Eastern')
     now = dd.now(tz)
