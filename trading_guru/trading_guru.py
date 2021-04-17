@@ -19,7 +19,6 @@ from ibapi.contract import Contract
 import pandas as pd
 import numpy as np
 import threading
-from futures3.thread import ThreadPoolExecutor
 import time
 from dependencies import strategy_hardcoded_values as SHV
 from dependencies import technical_indicators
@@ -235,46 +234,42 @@ def main():
         if account_value[-1] < investment_per_stock:
             print("All money is invested. TG will only look for sell orders")
         ord_df.drop_duplicates(inplace=True, ignore_index=True)
-        with ThreadPoolExecutor(max_workers=len(SHV.ticker_symbols)) as executer:
-            try:
-                executer.map(ticker_scan(tickers, investment_per_stock, ord_df, trade_count, max_trades, pos_df))
-            except Exception:
-                pass
+        for ticker in tickers:
+            ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_trades, pos_df)
     else:
         print('Market is closed')
         time.sleep(60)
 
 
-def ticker_scan(tickers, investment_per_stock, ord_df,trade_count, max_trades, pos_df):
-    for ticker in tickers:
-        print("scanning ticker.....", ticker)
-        histData(tickers.index(ticker), usTechStk(ticker), '1 M', SHV.ticker_size_mins)
-        time.sleep(2)
-        df = data_in_df(tickers, ticker)
-        if isinstance(df, pd.DataFrame):
-            df["stoch"] = technical_indicators.stochOscltr(df)
-            df["macd"] = technical_indicators.MACD(df)["MACD"]
-            df["signal"] = technical_indicators.MACD(df)["Signal"]
-            df["atr"] = technical_indicators.atr(df)
-            df["rsi"] = technical_indicators.rsi(df)
-            df["b_band_width"] = technical_indicators.bollBnd(df)["BB_width"]
-            df["b_band_mean"] = technical_indicators.bollBnd(df)["BB_mean"]
-            df.dropna(inplace=True)
-            quantity = int(investment_per_stock / df["Close"][-1])
-            if quantity == 0:
-                continue
-
-            # when you DON'T own the stock
-            if ticker not in pos_df["Symbol"].tolist() or \
-                    pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] == 0:
-                buy_conditions(ord_df, investment_per_stock, df, ticker, quantity, trade_count, max_trades)
-
-            # when you DO own the stock
-            elif pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] > 0:
-                sell_conditions(ord_df, df, pos_df, ticker, quantity)
-        else:
-            print(ticker, 'does not give a DF')
+def ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_trades, pos_df):
+    print("scanning ticker.....", ticker)
+    histData(tickers.index(ticker), usTechStk(ticker), '1 M', SHV.ticker_size_mins)
+    time.sleep(2)
+    df = data_in_df(tickers, ticker)
+    if isinstance(df, pd.DataFrame):
+        df["stoch"] = technical_indicators.stochOscltr(df)
+        df["macd"] = technical_indicators.MACD(df)["MACD"]
+        df["signal"] = technical_indicators.MACD(df)["Signal"]
+        df["atr"] = technical_indicators.atr(df)
+        df["rsi"] = technical_indicators.rsi(df)
+        df["b_band_width"] = technical_indicators.bollBnd(df)["BB_width"]
+        df["b_band_mean"] = technical_indicators.bollBnd(df)["BB_mean"]
+        df.dropna(inplace=True)
+        quantity = int(investment_per_stock / df["Close"][-1])
+        if quantity == 0:
             pass
+
+        # when you DON'T own the stock
+        if ticker not in pos_df["Symbol"].tolist() or \
+                pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] == 0:
+            buy_conditions(ord_df, investment_per_stock, df, ticker, quantity, trade_count, max_trades)
+
+        # when you DO own the stock
+        elif pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] > 0:
+            sell_conditions(ord_df, df, pos_df, ticker, quantity)
+    else:
+        print(ticker, 'does not give a DF')
+        pass
 
 
 #Running the code + smart sleep
