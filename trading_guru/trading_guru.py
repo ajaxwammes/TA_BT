@@ -242,6 +242,7 @@ def main():
                 pass
     else:
         print('Market is closed')
+        time.sleep(60)
 
 
 def ticker_scan(tickers, investment_per_stock, ord_df,trade_count, max_trades, pos_df):
