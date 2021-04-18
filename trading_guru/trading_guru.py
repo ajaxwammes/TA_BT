@@ -151,7 +151,7 @@ def buy_conditions(ord_df, investment_per_stock, df, ticker, quantity, trade_cou
         features.analyst_ratings(ticker) < SHV.analyst_rating_threshold and \
         account_value[-1] > investment_per_stock and \
         len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'BUY')]) == 0 and \
-        trade_count <= max_trades:
+        trade_count < max_trades:
             buy(ticker, trade_count, df, quantity)
     except Exception as e:
         print(ticker, e)
