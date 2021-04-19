@@ -17,7 +17,6 @@ from ibapi.client import EClient
 from ibapi.wrapper import EWrapper
 from ibapi.contract import Contract
 import pandas as pd
-import numpy as np
 import threading
 import time
 from dependencies import strategy_hardcoded_values as SHV
@@ -157,32 +156,26 @@ def buy_conditions(ord_df, investment_per_stock, df, ticker, quantity, trade_cou
         print(ticker, e)
 
 def buy(ticker, trade_count, df, quantity):
-    print('buying', ticker)
+    print('> buying', ticker)
     trade_count += 1
     app.reqIds(-1)
     time.sleep(2)
     order_id = app.nextValidOrderId
     app.placeOrder(order_id, usTechStk(ticker), order_types.marketOrder("BUY", quantity))
-    time.sleep(2)
-    quantity_adj = df["atr"][-1] / df["Close"][-1]
-    app.placeOrder(order_id + 1, usTechStk(ticker),
-                   order_types.limitOrder("SELL", np.clip(a=round(quantity * quantity_adj * SHV.rebalance_perc),
-                                                          a_min=1, a_max=None),
-                                          round(df["Close"][-1] + df["atr"][-1], 2)))
 
-def sell_conditions(ord_df, df, pos_df, ticker, quantity):
+def sell_conditions(ord_df, df, pos_df, ticker):
     orders = (ord_df[ord_df["Symbol"] == ticker]["OrderId"])
     try:
         if features.analyst_ratings(ticker) > SHV.analyst_rating_threshold and \
         len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'SELL')]) == 1:
-            print('selling', ticker, 'triggered by analyst ratings')
+            print('> selling', ticker, 'triggered by analyst ratings')
             sell(ord_df, pos_df, ticker, orders)
         elif df["rsi"][-1] > SHV.rsi_threshold and df["b_band_width"][-1] < df["b_band_mean"][-1] and \
         len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'SELL')]) == 1:
-            print('selling', ticker, 'triggered by b_bands + RSI')
+            print('> selling', ticker, 'triggered by b_bands + RSI')
             sell(ord_df, pos_df, ticker, orders)
         else:
-            limitorder_check(ord_df, ticker, df, quantity)
+            print('keep position for', ticker)
     except Exception as e:
         print(ticker, e)
 
@@ -195,20 +188,6 @@ def sell(ord_df, pos_df, ticker, orders):
     if len(orders) > 0:
         ord_id = ord_df[ord_df["Symbol"] == ticker]["OrderId"].sort_values(ascending=True).values[-1]
         app.cancelOrder(ord_id)
-
-def limitorder_check(ord_df, ticker, df, quantity):
-    orders = (ord_df[ord_df["Symbol"] == ticker]["OrderId"])
-    if len(orders) == 0:
-        print('warning:',ticker,'order has no LimitOrder: placing a new one')
-        quantity_adj = df["atr"][-1] / df["Close"][-1]
-        app.reqIds(-1)
-        time.sleep(2)
-        order_id = app.nextValidOrderId
-        app.placeOrder(order_id + 1, usTechStk(ticker), order_types.limitOrder("SELL", np.clip(a=round(quantity * quantity_adj * SHV.rebalance_perc),
-                                                                                a_min=1, a_max=None), round(df["Close"][-1] + df["atr"][-1], 2)))
-    else:
-        print('keep position for', ticker)
-
 
 def main():
     print('Scan:', features.current_time())
@@ -240,7 +219,6 @@ def main():
         print('Market is closed')
         time.sleep(60)
 
-
 def ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_trades, pos_df):
     print("scanning ticker.....", ticker)
     histData(tickers.index(ticker), usTechStk(ticker), '1 M', SHV.ticker_size_mins)
@@ -266,7 +244,7 @@ def ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_
 
         # when you DO own the stock
         elif pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] > 0:
-            sell_conditions(ord_df, df, pos_df, ticker, quantity)
+            sell_conditions(ord_df, df, pos_df, ticker)
     else:
         print(ticker, 'does not give a DF')
         pass

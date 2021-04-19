@@ -56,3 +56,19 @@ def afterHours():
         return False
     else:
         return True
+
+
+
+'''def limitorder_check(ord_df, ticker, df, quantity):
+    orders = (ord_df[ord_df["Symbol"] == ticker]["OrderId"])
+    if len(orders) == 0:
+        print('warning:',ticker,'order has no LimitOrder: placing a new one')
+        quantity_adj = df["atr"][-1] / df["Close"][-1]
+        app.reqIds(-1)
+        time.sleep(2)
+        order_id = app.nextValidOrderId
+        app.placeOrder(order_id + 1, usTechStk(ticker), order_types.limitOrder("SELL", np.clip(a=round(quantity * quantity_adj * SHV.rebalance_perc),
+                                                                                a_min=1, a_max=None), round(df["Close"][-1] + df["atr"][-1], 2)))
+    else:
+        print('keep position for', ticker)
+'''

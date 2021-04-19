@@ -35,10 +35,6 @@ stoch_threshold = 30
 #threshold value for RSI
 rsi_threshold = 76
 
-#percentage sell-off compared to ATR distance. If value is 1 then it rebalances a 100%
-# after rebalancing == to the growth of the stock. The low the value the less you sell off (let the runners run)
-rebalance_perc = 0.75
-
 #analyst rating threshold, after which to sell a stock (1 best - 5 worst)
 analyst_rating_threshold = 3
 

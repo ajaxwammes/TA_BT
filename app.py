@@ -12,7 +12,7 @@ anything = []
 
 @app.route('/api/create_portfolio', methods = ['POST'])
 def create_portfolio():
-    all_products = pd.read_csv('./data/Portfolio.csv')
+    all_products = pd.read_csv('old/data/Portfolio.csv')
     content = request.json
     fresh_environment = all_products[all_products.Industry.isin(content['choices'])]
     customerID = content['customerID']

@@ -179,8 +179,8 @@ for ticker in tickers:
             else:
                 tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i]/ohlc_dict[ticker]["Close"][i-1])-1)
 
-    if trade_count[ticker]%2 != 0:
-        trade_data[ticker][trade_count[ticker]].append(ohlc_dict[ticker]["Close"][i])
+        if trade_count[ticker]%2 != 0:
+            trade_data[ticker][trade_count[ticker]].append(ohlc_dict[ticker]["Close"][i])
 
     ohlc_dict[ticker]["ret"] = np.array(tickers_ret[ticker])
 
