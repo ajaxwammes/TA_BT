@@ -3,7 +3,7 @@ secs_day = 86400
 run_duration = secs_day*31
 
 #length of original portfolio
-stocks_n = 40
+stocks_n = 30
 
 #Change port to IB client you are using
 #TWS paper trading:7497
@@ -33,7 +33,7 @@ ticker_size_mins = str(ticker_size) + ' ' + 'mins'
 stoch_threshold = 30
 
 #threshold value for RSI
-rsi_threshold = 76
+rsi_threshold = 73
 
 #analyst rating threshold, after which to sell a stock (1 best - 5 worst)
 analyst_rating_threshold = 3
