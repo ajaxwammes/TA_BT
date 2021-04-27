@@ -16,7 +16,7 @@ port = 4002
 #Financial products (CW, CE, EST, ToF, RE, PBF) - low risk
 ticker_symbols = ['AWK', 'BMI', 'CWT', 'CWCO', 'ECL', 'ERII', 'AQUA', 'PNR', 'SBS', 'SJW', 'TTEK', 'XYL',
            'CWST', 'CLH', 'DAR', 'HSC', 'RSG', 'VTNR', 'WCN', 'WM', 'HCCI', 'AQMS',
-           'AMRC', 'AMSC', 'AMAT', 'CPST', 'WLDN', 'ITRI',
+           'AMRC', 'AMSC', 'AMAT', 'CGRN', 'WLDN', 'ITRI',
            'APTV', 'FUV', 'BEEM', 'NIU', 'BLDP', 'BLNK',
            'AMTX', 'BEP', 'NOVA', 'HASI', 'EBR', 'DQ',
            'BYND', 'TTCF'

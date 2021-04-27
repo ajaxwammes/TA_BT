@@ -38,7 +38,7 @@ def bollBnd(DF, n=20):
     df["BB_up"] = df['MA'] + 2*df['Close'].rolling(n).std(ddof=0)
     df["BB_dn"] = df['MA'] - 2*df['Close'].rolling(n).std(ddof=0)
     df["BB_width"] = df["BB_up"] - df["BB_dn"]
-    df["BB_mean"] = df['BB_width'].ewm(span=n, min_periods=n).mean()
+    df["BB_mean"] = df['BB_width'].ewm(span=n, min_periods=60).mean()
     df.dropna(inplace=True)
     return df
 

@@ -14,7 +14,7 @@ def limitOrder(direction,quantity,lmt_price):
     order.orderType = "LMT"
     order.totalQuantity = quantity
     order.lmtPrice = lmt_price
-    order.tif = 'GTC'
+    order.tif = 'IOC'
     return order
 
 

@@ -5,6 +5,8 @@ import pytz
 from pytz import timezone
 from datetime import datetime as dd
 from datetime import time
+from datetime import timedelta as delta
+from iexfinance.stocks import get_historical_intraday
 
 
 
@@ -38,6 +40,12 @@ def current_time():
     dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
     return dt_string
 
+def current_time_hour_min_sec():
+    tz = timezone('US/Eastern')
+    now = dd.now(tz)
+    dt_string = now.strftime("%H:%M:%S")
+    return dt_string
+
 def current_time_min():
     tz = timezone('US/Eastern')
     now = dd.now(tz)
@@ -59,7 +67,20 @@ def afterHours():
 
 
 
-'''def limitorder_check(ord_df, ticker, df, quantity):
+'''
+def historical_data():
+    token = 'RC20A34JW7XZFZLP'
+    tz = timezone('US/Eastern')
+    now = dd.now(tz)
+    days = delta(10)
+    start = now - days
+    df = {}
+    tickers = ['FB', 'AAPL', 'MSFT']
+    for ticker in tickers:
+        df[ticker] = get_historical_intraday(ticker, output_format='pandas', token=token, start=start, end=now)
+
+
+def limitorder_check(ord_df, ticker, df, quantity):
     orders = (ord_df[ord_df["Symbol"] == ticker]["OrderId"])
     if len(orders) == 0:
         print('warning:',ticker,'order has no LimitOrder: placing a new one')

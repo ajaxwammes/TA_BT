@@ -45,13 +45,13 @@ class TradeApp(EWrapper, EClient):
             self.data[reqId] = [{"Date": bar.date, "Open": bar.open, "High": bar.high, "Low": bar.low,
                                  "Close": bar.close, "Volume": bar.volume}]
         else:
-            self.data[reqId].append({"Date": bar.date, "Open":bar.open, "High": bar.high, "Low": bar.low,
+            self.data[reqId].append({"Date": bar.date, "Open": bar.open, "High": bar.high, "Low": bar.low,
                                      "Close": bar.close,  "Volume": bar.volume})
 
     def nextValidId(self, orderId):
         super().nextValidId(orderId)
         self.nextValidOrderId = orderId
-        #print("NextValidId:", orderId)
+#       print("NextValidId:", orderId)
         
     def position(self, account, contract, position, avgCost):
         super().position(account, contract, position, avgCost)
@@ -102,10 +102,11 @@ def histData(req_num, contract, duration, candle_size):
 def websocket_con():
     app.run()
 
-app = TradeApp()
-app.connect(host='127.0.0.1', port=SHV.port, clientId=23)
-con_thread = threading.Thread(target=websocket_con, daemon=True)
-con_thread.start()
+def establish_connection():
+    app = TradeApp()
+    app.connect(host='127.0.0.1', port=SHV.port, clientId=23)
+    con_thread = threading.Thread(target=websocket_con, daemon=True)
+    con_thread.start()
 
 #Storing trade app object in dataframe
 def dataDataframe(TradeApp_obj, symbols, symbol):
@@ -117,13 +118,13 @@ def data_in_df(tickers, ticker):
     counter = 1
     while True:
         try:
-            if counter > 3:
+            if counter > 1:
                 print('Pass for now:', ticker)
                 return 0
             df = dataDataframe(app, tickers, ticker)
         except Exception:
             print('Need extra time to fetch data...')
-            time.sleep(5)
+            time.sleep(3)
             counter = counter + 1
             continue
         return df
@@ -156,12 +157,13 @@ def buy_conditions(ord_df, investment_per_stock, df, ticker, quantity, trade_cou
         print(ticker, e)
 
 def buy(ticker, trade_count, df, quantity):
-    print('> buying', ticker)
     trade_count += 1
     app.reqIds(-1)
     time.sleep(2)
     order_id = app.nextValidOrderId
-    app.placeOrder(order_id, usTechStk(ticker), order_types.marketOrder("BUY", quantity))
+    print('>>> buying', ticker,'-', order_id)
+    limit_price = round(df['Close'][-1], 2)
+    app.placeOrder(order_id, usTechStk(ticker), order_types.limitOrder("BUY", quantity, limit_price))
 
 def sell_conditions(ord_df, df, pos_df, ticker):
     orders = (ord_df[ord_df["Symbol"] == ticker]["OrderId"])
@@ -172,7 +174,7 @@ def sell_conditions(ord_df, df, pos_df, ticker):
             sell(ord_df, pos_df, ticker, orders)
         elif df["rsi"][-1] > SHV.rsi_threshold and df["b_band_width"][-1] < df["b_band_mean"][-1] and \
         len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'SELL')]) == 1:
-            print('> selling', ticker, 'triggered by b_bands + RSI')
+            print('>>> selling', ticker, 'triggered by b_bands + RSI')
             sell(ord_df, pos_df, ticker, orders)
         else:
             print('keep position for', ticker)
@@ -191,37 +193,33 @@ def sell(ord_df, pos_df, ticker, orders):
 
 def main():
     print('Scan:', features.current_time())
-    if features.afterHours() == False:
-        app.data = {}
-        app.pos_df = pd.DataFrame(columns=['Account', 'Symbol', 'SecType', 'Currency', 'Position', 'Avg cost'])
-        app.order_df = pd.DataFrame(columns=['PermId', 'ClientId', 'OrderId', 'Account', 'Symbol', 'SecType',
-                                             'Exchange', 'Action', 'OrderType', 'TotalQty', 'CashQty', 'LmtPrice',
-                                             'AuxPrice', 'Status'])
-        app.reqPositions()
-        time.sleep(2)
-        pos_df = app.pos_df
-        pos_df.drop_duplicates(inplace=True, ignore_index=True)
-        tickers = features.what_tickers(app)
-        app.reqOpenOrders()
-        time.sleep(2)
-        ord_df = app.order_df
-        ord_df.drop_duplicates(inplace=True, ignore_index=True)
-        print('Account value:', round(account_value[-1], 2))
-        investment_per_stock = capital(pos_df)
-        max_trades = account_value[-1] / investment_per_stock
-        trade_count = 0
-        if account_value[-1] < investment_per_stock:
-            print("All money is invested. TG will only look for sell orders")
-        ord_df.drop_duplicates(inplace=True, ignore_index=True)
-        for ticker in tickers:
-            ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_trades, pos_df)
-    else:
-        print('Market is closed')
-        time.sleep(60)
+    app.data = {}
+    app.pos_df = pd.DataFrame(columns=['Account', 'Symbol', 'SecType', 'Currency', 'Position', 'Avg cost'])
+    app.order_df = pd.DataFrame(columns=['PermId', 'ClientId', 'OrderId', 'Account', 'Symbol', 'SecType',
+                                         'Exchange', 'Action', 'OrderType', 'TotalQty', 'CashQty', 'LmtPrice',
+                                         'AuxPrice', 'Status'])
+    app.reqPositions()
+    time.sleep(3)
+    pos_df = app.pos_df
+    pos_df.drop_duplicates(inplace=True, ignore_index=True)
+    tickers = features.what_tickers(app)
+    app.reqOpenOrders()
+    #time.sleep(2)
+    ord_df = app.order_df
+    ord_df.drop_duplicates(inplace=True, ignore_index=True)
+    print('Account value:', round(account_value[-1], 2))
+    investment_per_stock = capital(pos_df)
+    max_trades = account_value[-1] / investment_per_stock
+    trade_count = 0
+    if account_value[-1] < investment_per_stock:
+        print("All money is invested. TG will only look for sell orders")
+    ord_df.drop_duplicates(inplace=True, ignore_index=True)
+    for ticker in tickers:
+        ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_trades, pos_df)
 
 def ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_trades, pos_df):
     print("scanning ticker.....", ticker)
-    histData(tickers.index(ticker), usTechStk(ticker), '1 M', SHV.ticker_size_mins)
+    histData(tickers.index(ticker), usTechStk(ticker), '10 D', SHV.ticker_size_mins)
     time.sleep(2)
     df = data_in_df(tickers, ticker)
     if isinstance(df, pd.DataFrame):
@@ -249,13 +247,25 @@ def ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_
         print(ticker, 'does not give a DF')
         pass
 
+app = TradeApp()
+app.connect(host='127.0.0.1', port=SHV.port, clientId=23)
+con_thread = threading.Thread(target=websocket_con, daemon=True)
+con_thread.start()
 
 #Running the code + smart sleep
 while True:
+    if features.current_time_hour_min_sec() == '09:29:00' or \
+    features.current_time_hour_min_sec() == '09:29:01':
+        establish_connection()
+        print('May the stonks be with us')
     minute_count = features.current_time_min()
     if int(minute_count) not in {0, 15, 30, 45}:
-        time.sleep(3)
+        time.sleep(1)
     else:
-        main()
-        print('>>>>>>>>>>>>> Check done, now going to sleep <<<<<<<<<<<<<<<<<<<')
-        print('  ')
+        if features.afterHours() == False:
+            main()
+            print('>>>>>>>>>>>>>> Check done at', features.current_time_hour_min_sec(), 'now going to sleep <<<<<<<<<<<<<<')
+            print('  ')
+        else:
+            print('Market is closed')
+            time.sleep(60)
