@@ -118,13 +118,13 @@ def data_in_df(tickers, ticker):
     counter = 1
     while True:
         try:
-            if counter > 1:
+            if counter > 30:
                 print('Pass for now:', ticker)
                 return 0
             df = dataDataframe(app, tickers, ticker)
         except Exception:
-            print('Need extra time to fetch data...')
-            time.sleep(3)
+            #print('Need extra time to fetch data...')
+            time.sleep(0.1)
             counter = counter + 1
             continue
         return df
@@ -254,13 +254,12 @@ con_thread.start()
 
 #Running the code + smart sleep
 while True:
-    if features.current_time_hour_min_sec() == '09:29:00' or \
-    features.current_time_hour_min_sec() == '09:29:01':
+    if features.current_time_hour_min_sec() == '09:29:00':
         establish_connection()
         print('May the stonks be with us')
     minute_count = features.current_time_min()
-    if int(minute_count) not in {0, 15, 30, 45}:
-        time.sleep(1)
+    if int(minute_count) not in {0, 15, 30, 45, 7}:
+        time.sleep(0.95)
     else:
         if features.afterHours() == False:
             main()
