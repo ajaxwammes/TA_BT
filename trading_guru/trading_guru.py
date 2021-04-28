@@ -220,7 +220,7 @@ def main():
 def ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_trades, pos_df):
     print("scanning ticker.....", ticker)
     histData(tickers.index(ticker), usTechStk(ticker), '10 D', SHV.ticker_size_mins)
-    time.sleep(2)
+    #time.sleep(2)
     df = data_in_df(tickers, ticker)
     if isinstance(df, pd.DataFrame):
         df["stoch"] = technical_indicators.stochOscltr(df)
@@ -258,9 +258,9 @@ while True:
         establish_connection()
         print('May the stonks be with us')
     minute_count = features.current_time_min()
-    if int(minute_count) not in {0, 15, 30, 45, 7}:
-        time.sleep(0.95)
-    else:
+    second_count = features.current_time_sec()
+    if int(minute_count) in {0, 15, 30, 45} and \
+    int(second_count) == 00:
         if features.afterHours() == False:
             main()
             print('>>>>>>>>>>>>>> Check done at', features.current_time_hour_min_sec(), 'now going to sleep <<<<<<<<<<<<<<')
@@ -268,3 +268,5 @@ while True:
         else:
             print('Market is closed')
             time.sleep(60)
+    else:
+        time.sleep(0.95)

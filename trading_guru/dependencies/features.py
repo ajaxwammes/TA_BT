@@ -5,9 +5,6 @@ import pytz
 from pytz import timezone
 from datetime import datetime as dd
 from datetime import time
-from datetime import timedelta as delta
-from iexfinance.stocks import get_historical_intraday
-
 
 
 def analyst_ratings(ticker):
@@ -40,10 +37,10 @@ def current_time():
     dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
     return dt_string
 
-def current_time_hour_min_sec():
+def current_time_sec():
     tz = timezone('US/Eastern')
     now = dd.now(tz)
-    dt_string = now.strftime("%H:%M:%S")
+    dt_string = now.strftime("%S")
     return dt_string
 
 def current_time_min():
@@ -52,6 +49,17 @@ def current_time_min():
     dt_string = now.strftime("%M")
     return dt_string
 
+def current_time_hour_min_sec():
+    tz = timezone('US/Eastern')
+    now = dd.now(tz)
+    dt_string = now.strftime("%H:%M:%S")
+    return dt_string
+
+def current_time_min_sec():
+    tz = timezone('US/Eastern')
+    now = dd.now(tz)
+    dt_string = now.strftime("%M:%S")
+    return dt_string
 
 def afterHours():
     tz = pytz.timezone('US/Eastern')
@@ -68,18 +76,6 @@ def afterHours():
 
 
 '''
-def historical_data():
-    token = 'RC20A34JW7XZFZLP'
-    tz = timezone('US/Eastern')
-    now = dd.now(tz)
-    days = delta(10)
-    start = now - days
-    df = {}
-    tickers = ['FB', 'AAPL', 'MSFT']
-    for ticker in tickers:
-        df[ticker] = get_historical_intraday(ticker, output_format='pandas', token=token, start=start, end=now)
-
-
 def limitorder_check(ord_df, ticker, df, quantity):
     orders = (ord_df[ord_df["Symbol"] == ticker]["OrderId"])
     if len(orders) == 0:
