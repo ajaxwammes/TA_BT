@@ -23,6 +23,7 @@ from dependencies import strategy_hardcoded_values as SHV
 from dependencies import technical_indicators
 from dependencies import order_types
 from dependencies import features
+import sys
 
 
 account_value = []
@@ -122,6 +123,7 @@ def data_in_df(tickers, ticker):
                 print('Pass for now:', ticker)
                 return 0
             df = dataDataframe(app, tickers, ticker)
+            print(df.tail)
         except Exception:
             #print('Need extra time to fetch data...')
             time.sleep(0.1)
@@ -254,19 +256,20 @@ con_thread.start()
 
 #Running the code + smart sleep
 while True:
-    if features.current_time_hour_min_sec() == '09:29:00':
+    if features.current_time_hour_min_sec() == '07:00:00':
+        print('Another day with diamond hands! Now going to reboot')
+        sys.exit()
+    if features.current_time_hour_min_sec() == '09:25:00':
         establish_connection()
         print('May the stonks be with us')
-    minute_count = features.current_time_min()
-    second_count = features.current_time_sec()
-    if int(minute_count) in {0, 15, 30, 45} and \
-    int(second_count) == 00:
+    if int(features.current_time_min()) in {14, 29, 44, 59} and \
+    int(features.current_time_sec()) == 20:
         if features.afterHours() == False:
             main()
             print('>>>>>>>>>>>>>> Check done at', features.current_time_hour_min_sec(), 'now going to sleep <<<<<<<<<<<<<<')
             print('  ')
         else:
-            print('Market is closed')
+            print('Market is closed:', features.current_time_hour_min_sec())
             time.sleep(60)
     else:
         time.sleep(0.95)

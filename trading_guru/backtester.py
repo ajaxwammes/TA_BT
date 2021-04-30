@@ -18,12 +18,15 @@ from ibapi.contract import Contract
 import pandas as pd
 import threading
 #import matplotlib
+from itertools import chain, groupby
 import time
 import numpy as np
 from copy import deepcopy
 from trading_guru.dependencies import technical_indicators as TI
 from trading_guru.features_backtester import KPIs_Long as KL, KPIs_IntraDay as KI
 
+
+pd.options.mode.chained_assignment = None
 
 class TradeApp(EWrapper, EClient):
     def __init__(self):
@@ -75,7 +78,7 @@ time.sleep(1) # some latency added to ensure that the connection is established
 #Financial products (CW, CE, EST, ToF, RE, PBF) - low risk
 tickers = ['AWK', 'BMI', 'CWT', 'CWCO', 'ECL', 'ERII', 'AQUA', 'PNR', 'SBS', 'SJW', 'TTEK', 'XYL',
            'CWST', 'CLH', 'DAR', 'HSC', 'RSG', 'VTNR', 'WCN', 'WM', 'HCCI', 'AQMS',
-           'AMRC', 'AMSC', 'AMAT', 'CPST', 'WLDN', 'ITRI',
+           'AMRC', 'AMSC', 'AMAT', 'CGRN', 'WLDN', 'ITRI',
            'APTV', 'FUV', 'BEEM', 'NIU', 'BLDP', 'BLNK',
            'AMTX', 'BEP', 'NOVA', 'HASI', 'EBR', 'DQ',
            'BYND', 'TTCF'
@@ -94,12 +97,17 @@ def dataDataframe(TradeApp_obj,symbols, symbol):
     return df
 
 def data_in_df(tickers, ticker):
+    counter = 1
     while True:
         try:
+            if counter > 20:
+                print('Pass for now:', ticker)
+                return 0
             df = dataDataframe(app, tickers, ticker)
         except Exception:
             print('Need extra time to fetch data...')
-            time.sleep(10)
+            time.sleep(5)
+            counter = counter + 1
             continue
         return df
 
@@ -113,49 +121,76 @@ def get_data():
     return data
 
 
-historicalData = get_data()
 
 
-#len(app.data)
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Backtesting <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-#merging the indicators in 1 DF 
-ohlc_dict = deepcopy(historicalData)
-tickers_signal = {}
-tickers_ret = {}
-trade_count = {}
-trade_data = {}
-for ticker in tickers:
-    print("Calculating for ",ticker)
-    ohlc_dict[ticker]["stoch"] = TI.stochOscltr(ohlc_dict[ticker])
-    ohlc_dict[ticker]["macd"] = TI.MACD(ohlc_dict[ticker])["MACD"]
-    ohlc_dict[ticker]["signal"] = TI.MACD(ohlc_dict[ticker])["Signal"]
-    ohlc_dict[ticker]['time'] = ohlc_dict[ticker].index.str[10:]
-#    ohlc_dict[ticker]['day_sav'] = TI.daylight_savings(ohlc_dict[ticker])
-    ohlc_dict[ticker]["atr"] = TI.atr(ohlc_dict[ticker],80)
-    ohlc_dict[ticker]["rsi"] = TI.rsi(ohlc_dict[ticker],20)
-    ohlc_dict[ticker]["slippage"] = TI.slippage(ohlc_dict[ticker])
-    ohlc_dict[ticker]["trading_costs"] = TI.trading_costs(ohlc_dict[ticker],Capital)
-#    ohlc_dict[ticker]["adx"] = TI.adx(ohlc_dict[ticker])
-    ohlc_dict[ticker]["bollBnd_width"] = TI.bollBnd(ohlc_dict[ticker])['BB_width']
-    ohlc_dict[ticker]["bollBnd_up"] = TI.bollBnd(ohlc_dict[ticker])['BB_up']
-    ohlc_dict[ticker]["bollBnd_dn"] = TI.bollBnd(ohlc_dict[ticker])['BB_dn']
-    ohlc_dict[ticker]["b_band_mean"] = TI.bollBnd(ohlc_dict[ticker])['BB_mean']
-    ohlc_dict[ticker]["b_band_width"] = TI.bollBnd(ohlc_dict[ticker])['BB_width']
+def ohlc_dict(historicalData):
+    ohlc_dict = deepcopy(historicalData)
+    for ticker in ohlc_dict:
+        print("Calculating for ", ticker)
+        ohlc_dict[ticker]["stoch"] = TI.stochOscltr(ohlc_dict[ticker])
+        ohlc_dict[ticker]["macd"] = TI.MACD(ohlc_dict[ticker])["MACD"]
+        ohlc_dict[ticker]["signal"] = TI.MACD(ohlc_dict[ticker])["Signal"]
+        ohlc_dict[ticker]['time'] = ohlc_dict[ticker].index.str[10:]
+    #    ohlc_dict[ticker]['day_sav'] = TI.daylight_savings(ohlc_dict[ticker])
+        ohlc_dict[ticker]["atr"] = TI.atr(ohlc_dict[ticker],80)
+        ohlc_dict[ticker]["rsi"] = TI.rsi(ohlc_dict[ticker],20)
+    #    ohlc_dict[ticker]["slippage"] = TI.slippage(ohlc_dict[ticker])
+        ohlc_dict[ticker]["trading_costs"] = TI.trading_costs(ohlc_dict[ticker],Capital)
+    #    ohlc_dict[ticker]["adx"] = TI.adx(ohlc_dict[ticker])
+        ohlc_dict[ticker]["bollBnd_width"] = TI.bollBnd(ohlc_dict[ticker])['BB_width']
+        ohlc_dict[ticker]["bollBnd_up"] = TI.bollBnd(ohlc_dict[ticker])['BB_up']
+        ohlc_dict[ticker]["bollBnd_dn"] = TI.bollBnd(ohlc_dict[ticker])['BB_dn']
+        ohlc_dict[ticker]["b_band_mean"] = TI.bollBnd(ohlc_dict[ticker])['BB_mean']
+        ohlc_dict[ticker]["b_band_width"] = TI.bollBnd(ohlc_dict[ticker])['BB_width']
+        ohlc_dict[ticker]['tickers_signal'] = ''
+        ohlc_dict[ticker].dropna(inplace=True)
+    return ohlc_dict
 
-
-    ohlc_dict[ticker].dropna(inplace=True)
-    trade_count[ticker] = 0
-    tickers_signal[ticker] = ""
-    tickers_ret[ticker] = [0]
-    trade_data[ticker] = {}
 
 
 #calculating return of strategy
-for ticker in tickers:
-    print("Calculating daily returns for ",ticker)
-    for i in range(1,len(ohlc_dict[ticker])):
+def buy_sell_signals(ohlc_dict):
+    for ticker in ohlc_dict:
+        print("Calculating daily returns for ", ticker)
+        for i in range(len(ohlc_dict[ticker])):
+            if ohlc_dict[ticker]["macd"][i] > ohlc_dict[ticker]["signal"][i] and \
+            ohlc_dict[ticker]["stoch"][i] > 30 and \
+            ohlc_dict[ticker]["stoch"][i] > ohlc_dict[ticker]["stoch"][i - 1]:
+                ohlc_dict[ticker]['tickers_signal'][i] = 1
+
+            if ohlc_dict[ticker]["rsi"][i] > 73 and \
+            ohlc_dict[ticker]["b_band_width"][i] < ohlc_dict[ticker]["b_band_mean"][i]:
+                ohlc_dict[ticker]['tickers_signal'][i] = 0
+    return ohlc_dict
+
+def clean_buy_sell_signals(buy_sell_df):
+    for ticker in buy_sell_df:
+        ohlc_dict[ticker].tickers_signal = list(chain.from_iterable(
+                      [key, *['']*(len(list(gr))-1)]
+                      for key, gr in groupby(ohlc_dict[ticker].tickers_signal.replace("", np.nan).ffill())
+                  ))
+    return ohlc_dict
+
+def get_returns(clean_df):
+    for ticker in clean_df:
+        clean_df[ticker]['transaction_price'] = ''
+        for i in range(len(ohlc_dict[ticker])):
+            if clean_df[ticker]['tickers_signal'][i] == 1.0:
+                clean_df[ticker]['transaction_price'][i] = clean_df[ticker]['Close'][i]
+            if clean_df[ticker]['tickers_signal'][i] == 0.0:
+                clean_df[ticker]['transaction_price'][i] = clean_df[ticker]['Close'][i]
+    return clean_df
+
+historicalData = get_data()
+ohlc_dict = ohlc_dict(historicalData)
+buy_sell_df = buy_sell_signals(ohlc_dict)
+clean_df = clean_buy_sell_signals(buy_sell_df)
+returns = get_returns(clean_df)
+
+
         if tickers_signal[ticker] == "":
             tickers_ret[ticker].append(0)
             if ohlc_dict[ticker]["macd"][i]> ohlc_dict[ticker]["signal"][i] and \

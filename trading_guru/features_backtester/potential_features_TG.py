@@ -15,9 +15,7 @@
                                        stopOrder("SELL", old_quantity, round(df["Close"][-1]+df["atr"][-1], 1)))
                 except Exception as e:
                     print(ticker, e)
-'''
 
-'''
 def tickers_final(pos_n):
     app.reqAccountSummary(1, "All", "$LEDGER:USD")
     time.sleep(1)

@@ -1,21 +1,18 @@
-# -*- coding: utf-8 -*-
 """
 Created on Wed Sep 16 16:47:57 2020
-
 @author: mart.vos
-
 Technical indicators
 """
 
 import numpy as np
 
-#>>>>>>>>>>>>>>>>>>>>>> Technical Indicators  <<<<<<<<<<<<<<<<<<<<<<<<<
 
 #MACD indicator
+'''function to calculate MACD: typical values 
+a(fast moving average) = 12; 
+b(slow moving average) =26; 
+c(signal line ma window) =9'''
 def MACD(DF,a=12,b=26,c=9):
-    #function to calculate MACD: typical values a(fast moving average) = 12; 
-      #                                         b(slow moving average) =26; 
-       #                                        c(signal line ma window) =9
     df = DF.copy()
     df["MA_Fast"]=df["Close"].ewm(span=a,min_periods=a).mean()
     df["MA_Slow"]=df["Close"].ewm(span=b,min_periods=b).mean()
@@ -31,7 +28,7 @@ def ReturnsBH(DF, n=20):
     return df['ret_BH']
     
 #BollingerBands
-def bollBnd(DF, n=20):
+def bollBnd(DF, n=60):
     df = DF.copy()
 #    df["MA"] = df['Close'].rolling(n).mean() #simple moving average
     df["MA"] = df['Close'].ewm(span=n,min_periods=n).mean() #exponential movinga avg
@@ -43,7 +40,7 @@ def bollBnd(DF, n=20):
     return df
 
 #ATR: to calculate true range and average true range 
-def atr(DF, n=20):
+def atr(DF, n=60):
     df = DF.copy()
     df["H-L"] = abs(df['High']-df['Low'])
     df["H-PC"] = abs(df['High']-df['Close'].shift(1))
@@ -53,9 +50,8 @@ def atr(DF, n=20):
     df['ATR'] = df['TR'].ewm(com=n,min_periods=n).mean()*10
     return df['ATR']
 
-
 #RSI  
-def rsi(DF,n=20):
+def rsi(DF,n=60):
     df = DF.copy()
     df['delta']=df['Close'] - df['Close'].shift(1)
     df['gain']=np.where(df['delta']>=0,df['delta'],0)
@@ -82,7 +78,7 @@ def rsi(DF,n=20):
 
 
 #ADX: to see how a stock is trending
-def adx(DF,n=20):
+def adx(DF,n=60):
     df2 = DF.copy()
     df2['H-L']=abs(df2['High']-df2['Low'])
     df2['H-PC']=abs(df2['High']-df2['Close'].shift(1))
@@ -108,7 +104,7 @@ def adx(DF,n=20):
     
 #Stochastic Oscillator: over/undersold: >80 overbought and <20 oversold 
 # a=looking period, b=moving average window for %D
-def stochOscltr(DF,a=20,b=3):
+def stochOscltr(DF,a=60,b=9):
     """function to calculate Stochastics
        a = lookback period
        b = moving average window for %D"""

@@ -36,7 +36,7 @@ stoch_threshold = 30
 rsi_threshold = 73
 
 #analyst rating threshold, after which to sell a stock (1 best - 5 worst)
-analyst_rating_threshold = 3
+analyst_rating_threshold = 2.8
 
 """ TECHNICAL INDICATORS """
 
