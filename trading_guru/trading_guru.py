@@ -256,7 +256,7 @@ con_thread.start()
 
 #Running the code + smart sleep
 while True:
-    if features.current_time_hour_min_sec() == '07:00:00':
+    if features.current_time_hour_min_sec() == '03:00:00':
         print('Another day with diamond hands! Now going to reboot')
         sys.exit()
     if features.current_time_hour_min_sec() == '09:25:00':
