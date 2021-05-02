@@ -261,7 +261,7 @@ while True:
         sys.exit()
     if features.current_time_hour_min_sec() == '09:25:20':
         establish_connection()
-        print('May the stonks be with us')
+        print('Restarting IB, may the stonks be with us')
     if int(features.current_time_min()) in {14, 29, 44, 59} and \
     int(features.current_time_sec()) == 20:
         if features.afterHours() == False:
