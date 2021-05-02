@@ -259,7 +259,7 @@ while True:
     if features.current_time_hour_min_sec() == '03:00:00':
         print('Another day with diamond hands! Now going to reboot')
         sys.exit()
-    if features.current_time_hour_min_sec() == '09:25:00':
+    if features.current_time_hour_min_sec() == '09:25:20':
         establish_connection()
         print('May the stonks be with us')
     if int(features.current_time_min()) in {14, 29, 44, 59} and \
@@ -270,6 +270,6 @@ while True:
             print('  ')
         else:
             print('Market is closed:', features.current_time_hour_min_sec())
-            time.sleep(60)
+            time.sleep(1)
     else:
         time.sleep(0.95)
