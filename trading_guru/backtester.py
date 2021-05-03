@@ -16,7 +16,6 @@ from ibapi.wrapper import EWrapper
 from ibapi.contract import Contract
 import pandas as pd
 import threading
-# import matplotlib
 import time
 import numpy as np
 from copy import deepcopy
@@ -82,7 +81,7 @@ time.sleep(1)  # some latency added to ensure that the connection is established
 # Financial products (CW, CE, EST, ToF, RE, PBF) - low risk
 tickers = ['AWK', 'BMI', 'CWT', 'CWCO', 'ECL', 'ERII', 'AQUA', 'PNR', 'SBS', 'SJW', 'TTEK', 'XYL',
            'CWST', 'CLH', 'DAR', 'HSC', 'RSG', 'VTNR', 'WCN', 'WM', 'HCCI', 'AQMS',
-           'AMRC', 'AMSC', 'AMAT', 'CPST', 'WLDN', 'ITRI',
+           'AMRC', 'AMSC', 'AMAT', 'CGRN', 'WLDN', 'ITRI',
            'APTV', 'FUV', 'BEEM', 'NIU', 'BLDP',
             'BEP', 'NOVA', 'HASI', 'EBR', 'DQ',
            'BYND', 'TTCF'
@@ -121,217 +120,257 @@ def get_data():
         data[ticker] = data_in_df(tickers, ticker)
     return data
 
-
-historicalData = get_data()
-
-# len(app.data)
-
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Backtesting <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 # merging the indicators in 1 DF
-ohlc_dict = deepcopy(historicalData)
-tickers_signal = {}
-tickers_ret = {}
-trade_count = {}
-trade_data = {}
-for ticker in historicalData:
-    print("Calculating for ", ticker)
-    ohlc_dict[ticker]["stoch"] = TI.stochOscltr(ohlc_dict[ticker])
-    ohlc_dict[ticker]["macd"] = TI.MACD(ohlc_dict[ticker])["MACD"]
-    ohlc_dict[ticker]["signal"] = TI.MACD(ohlc_dict[ticker])["Signal"]
-    ohlc_dict[ticker]['time'] = ohlc_dict[ticker].index.str[10:]
-    #    ohlc_dict[ticker]['day_sav'] = TI.daylight_savings(ohlc_dict[ticker])
-    ohlc_dict[ticker]["atr"] = TI.atr(ohlc_dict[ticker], 80)
-    ohlc_dict[ticker]["rsi"] = TI.rsi(ohlc_dict[ticker], 20)
-    ohlc_dict[ticker]["slippage"] = TI.slippage(ohlc_dict[ticker])
-    ohlc_dict[ticker]["trading_costs"] = TI.trading_costs(ohlc_dict[ticker], Capital)
-    #    ohlc_dict[ticker]["adx"] = TI.adx(ohlc_dict[ticker])
-    ohlc_dict[ticker]["bollBnd_width"] = TI.bollBnd(ohlc_dict[ticker])['BB_width']
-    ohlc_dict[ticker]["bollBnd_up"] = TI.bollBnd(ohlc_dict[ticker])['BB_up']
-    ohlc_dict[ticker]["bollBnd_dn"] = TI.bollBnd(ohlc_dict[ticker])['BB_dn']
-    ohlc_dict[ticker]["b_band_mean"] = TI.bollBnd(ohlc_dict[ticker])['BB_mean']
-    ohlc_dict[ticker]["b_band_width"] = TI.bollBnd(ohlc_dict[ticker])['BB_width']
+def backtest_df(historicalData):
+    ohlc_dict = deepcopy(historicalData)
+    tickers_signal = {}
+    tickers_ret = {}
+    trade_count = {}
+    trade_data = {}
+    for ticker in historicalData:
+        print("Calculating for ", ticker)
+        ohlc_dict[ticker]["stoch"] = TI.stochOscltr(ohlc_dict[ticker])
+        ohlc_dict[ticker]["macd"] = TI.MACD(ohlc_dict[ticker])["MACD"]
+        ohlc_dict[ticker]["signal"] = TI.MACD(ohlc_dict[ticker])["Signal"]
+        ohlc_dict[ticker]['time'] = ohlc_dict[ticker].index.str[10:]
+        #    ohlc_dict[ticker]['day_sav'] = TI.daylight_savings(ohlc_dict[ticker])
+        ohlc_dict[ticker]["atr"] = TI.atr(ohlc_dict[ticker], 80)
+        ohlc_dict[ticker]["rsi"] = TI.rsi(ohlc_dict[ticker], 20)
+        ohlc_dict[ticker]["slippage"] = TI.slippage(ohlc_dict[ticker])
+        ohlc_dict[ticker]["trading_costs"] = TI.trading_costs(ohlc_dict[ticker], Capital)
+        #    ohlc_dict[ticker]["adx"] = TI.adx(ohlc_dict[ticker])
+        ohlc_dict[ticker]["bollBnd_width"] = TI.bollBnd(ohlc_dict[ticker])['BB_width']
+        ohlc_dict[ticker]["bollBnd_up"] = TI.bollBnd(ohlc_dict[ticker])['BB_up']
+        ohlc_dict[ticker]["bollBnd_dn"] = TI.bollBnd(ohlc_dict[ticker])['BB_dn']
+        ohlc_dict[ticker]["b_band_mean"] = TI.bollBnd(ohlc_dict[ticker])['BB_mean']
+        ohlc_dict[ticker]["b_band_width"] = TI.bollBnd(ohlc_dict[ticker])['BB_width']
 
-    ohlc_dict[ticker].dropna(inplace=True)
-    trade_count[ticker] = 0
-    tickers_signal[ticker] = ""
-    tickers_ret[ticker] = [0]
-    trade_data[ticker] = {}
+        ohlc_dict[ticker].dropna(inplace=True)
+        trade_count[ticker] = 0
+        tickers_signal[ticker] = ""
+        tickers_ret[ticker] = [0]
+        trade_data[ticker] = {}
 
-# calculating return of strategy
-for ticker in historicalData:
-    print("Calculating daily returns for ", ticker)
-    for i in range(1, len(ohlc_dict[ticker])):
-        if tickers_signal[ticker] == "":
-            tickers_ret[ticker].append(0)
-            if ohlc_dict[ticker]["macd"][i] > ohlc_dict[ticker]["signal"][i] and \
-                    ohlc_dict[ticker]["stoch"][i] > 30 and \
-                    ohlc_dict[ticker]["stoch"][i] > ohlc_dict[ticker]["stoch"][i - 1]:
-                tickers_signal[ticker] = "Buy"
-                trade_count[ticker] += 1
-                trade_data[ticker][trade_count[ticker]] = [ohlc_dict[ticker]["Close"][i]]
+    # calculating return of strategy
+    for ticker in ohlc_dict:
+        print("Calculating daily returns for ", ticker)
+        for i in range(1, len(ohlc_dict[ticker])):
+            if tickers_signal[ticker] == "":
+                tickers_ret[ticker].append(0)
+                if ohlc_dict[ticker]["macd"][i] > ohlc_dict[ticker]["signal"][i] and \
+                        ohlc_dict[ticker]["stoch"][i] > 30 and \
+                        ohlc_dict[ticker]["stoch"][i] > ohlc_dict[ticker]["stoch"][i - 1]:
+                    tickers_signal[ticker] = "Buy"
+                    trade_count[ticker] += 1
+                    trade_data[ticker][trade_count[ticker]] = [ohlc_dict[ticker]["Close"][i]]
 
-        elif tickers_signal[ticker] == "Buy":
-            if ohlc_dict[ticker]["rsi"][i] > 76 and \
-                    ohlc_dict[ticker]["b_band_width"][i] < ohlc_dict[ticker]["b_band_mean"][i]:
-                tickers_signal[ticker] = ""
-                trade_data[ticker][trade_count[ticker]].append(
-                    (ohlc_dict[ticker]["Close"][i] - ohlc_dict[ticker]["slippage"][i]))
-                trade_count[ticker] += 1
-                tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i]
-                                            - ohlc_dict[ticker]["slippage"][i])
-                                           / (ohlc_dict[ticker]["Close"][i - 1]) - 1)
+            elif tickers_signal[ticker] == "Buy":
+                if ohlc_dict[ticker]["rsi"][i] > 76 and \
+                        ohlc_dict[ticker]["b_band_width"][i] < ohlc_dict[ticker]["b_band_mean"][i]:
+                    tickers_signal[ticker] = ""
+                    trade_data[ticker][trade_count[ticker]].append(
+                        (ohlc_dict[ticker]["Close"][i] - ohlc_dict[ticker]["slippage"][i]))
+                    trade_count[ticker] += 1
+                    tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i]
+                                                - ohlc_dict[ticker]["slippage"][i])
+                                               / (ohlc_dict[ticker]["Close"][i - 1]) - 1)
 
+                else:
+                    tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i] / ohlc_dict[ticker]["Close"][i - 1]) - 1)
 
-            else:
-                tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i] / ohlc_dict[ticker]["Close"][i - 1]) - 1)
+        if trade_count[ticker] % 2 != 0:
+            trade_data[ticker][trade_count[ticker]].append(ohlc_dict[ticker]["Close"][-1])
 
-    if trade_count[ticker] % 2 != 0:
-        trade_data[ticker][trade_count[ticker]].append(ohlc_dict[ticker]["Close"][-1])
+        ohlc_dict[ticker]["ret"] = np.array(tickers_ret[ticker])
 
-    ohlc_dict[ticker]["ret"] = np.array(tickers_ret[ticker])
+    # make data frame to show returns of all tickers per time period
+    strategy_df = pd.DataFrame()
+    for ticker in historicalData:
+        strategy_df[ticker] = ohlc_dict[ticker]["ret"]
 
-# make data frame to show returns of all tickers per time period
-strategy_df = pd.DataFrame()
-for ticker in historicalData:
-    strategy_df[ticker] = ohlc_dict[ticker]["ret"]
+    # assuming that there is equal amount of capital allocated/invested to each stock
+    strategy_df["ret"] = strategy_df.mean(axis=1)
 
-# assuming that there is equal amount of capital allocated/invested to each stock
-strategy_df["ret"] = strategy_df.mean(axis=1)
+    return trade_data, ohlc_dict, trade_count, strategy_df
 
 # >>>>>>>>>>>>>>>>>>>> Get Intra-day KPIs of strategy <<<<<<<<<<<<<<<<<<<<<<<
 
 # calculating overall strategy's KPIs
-trade_df = {}
-for ticker in historicalData:
-    trade_df[ticker] = pd.DataFrame(trade_data[ticker]).T
-    trade_df[ticker].columns = ["trade_entry_pr", "trade_exit_pr"]
-    trade_df[ticker]["return"] = (trade_df[ticker]["trade_exit_pr"] / trade_df[ticker]["trade_entry_pr"])
+def intraday_ticker(trade_data):
+    trade_df = {}
+    for ticker in historicalData:
+        trade_df[ticker] = pd.DataFrame(trade_data[ticker]).T
+        trade_df[ticker].columns = ["trade_entry_pr", "trade_exit_pr"]
+        trade_df[ticker]["return"] = (trade_df[ticker]["trade_exit_pr"] / trade_df[ticker]["trade_entry_pr"])
 
-win_rate = {}
-mean_ret_pt = {}
-mean_ret_pwt = {}
-mean_ret_plt = {}
-max_cons_loss = {}
-for ticker in historicalData:
-    print("calculating intraday KPIs for ", ticker)
-    win_rate[ticker] = KI.winRate(trade_df[ticker])
-    mean_ret_pt[ticker] = KI.meanretpertrade(trade_df[ticker])
-    mean_ret_pwt[ticker] = KI.meanretwintrade(trade_df[ticker])
-    mean_ret_plt[ticker] = KI.meanretlostrade(trade_df[ticker])
+    win_rate = {}
+    mean_ret_pt = {}
+    mean_ret_pwt = {}
+    mean_ret_plt = {}
+    for ticker in historicalData:
+        print("calculating intraday KPIs for ", ticker)
+        win_rate[ticker] = KI.winRate(trade_df[ticker])
+        mean_ret_pt[ticker] = KI.meanretpertrade(trade_df[ticker])
+        mean_ret_pwt[ticker] = KI.meanretwintrade(trade_df[ticker])
+        mean_ret_plt[ticker] = KI.meanretlostrade(trade_df[ticker])
 
-KPI_ID_df = pd.DataFrame([win_rate, mean_ret_pt, mean_ret_pwt, mean_ret_plt],
-                         index=["Win Rate", "MR Per Trade", "MR Per WT", "MR Per LT"])
-print(KPI_ID_df.T)
+    KPI_ID_df = pd.DataFrame([win_rate, mean_ret_pt, mean_ret_pwt, mean_ret_plt],
+                             index=["Win Rate", "MR Per Trade", "MR Per WT", "MR Per LT"])
+    print(KPI_ID_df.T)
+    return KPI_ID_df
 
 # Intra-day KPIs - Overall
-wrs = sum(KPI_ID_df.T['Win Rate']) / len(KPI_ID_df.T['Win Rate'])
-mrpt = sum(KPI_ID_df.T['MR Per Trade']) / len(KPI_ID_df.T['MR Per Trade'])
-mrpwt = sum(KPI_ID_df.T['MR Per WT']) / len(KPI_ID_df.T['MR Per WT'])
-mrplt = sum(KPI_ID_df.T['MR Per LT'].dropna()) / len(KPI_ID_df.T['MR Per LT'].dropna())
+def intraday_total(KPI_ID_df):
+    wrs = sum(KPI_ID_df.T['Win Rate']) / len(KPI_ID_df.T['Win Rate'])
+    mrpt = sum(KPI_ID_df.T['MR Per Trade']) / len(KPI_ID_df.T['MR Per Trade'])
+    mrpwt = sum(KPI_ID_df.T['MR Per WT']) / len(KPI_ID_df.T['MR Per WT'])
+    mrplt = sum(KPI_ID_df.T['MR Per LT'].dropna()) / len(KPI_ID_df.T['MR Per LT'].dropna())
 
-IntraDay_Indicators = pd.DataFrame([wrs, mrpt, mrpwt, mrplt],
-                                   index=["Win Rate", "MR Per Trade", "MR Per WT", "MR Per LT"])
-print(IntraDay_Indicators.T)
+    IntraDay_Indicators = pd.DataFrame([wrs, mrpt, mrpwt, mrplt],
+                                       index=["Win Rate", "MR Per Trade", "MR Per WT", "MR Per LT"])
+    print(IntraDay_Indicators.T)
 
 # >>>>>>>>>>>>>>>>>>>> Get General KPIs of strategy <<<<<<<<<<<<<<<<<<<<<<<
 
 # General KPIs - per product
-cagr = {}
-sharpe = {}
-sortinos = {}
-max_drawdown = {}
-total_trades_ind = {}
-for ticker in historicalData:
-    print("calculating KPIs for ", ticker)
-    cagr[ticker] = KL.CAGR(ohlc_dict[ticker])
-    sharpe[ticker] = KL.sharpe(ohlc_dict[ticker])
-    sortinos[ticker] = KL.sortino(ohlc_dict[ticker])
-    max_drawdown[ticker] = KL.max_dd(ohlc_dict[ticker])
-    total_trades_ind[ticker] = trade_count[ticker]
+def general_KPIs_tickers(ohlc_dict, trade_count):
+    cagr = {}
+    sharpe = {}
+    sortinos = {}
+    max_drawdown = {}
+    total_trades_ind = {}
+    for ticker in historicalData:
+        print("calculating KPIs for ", ticker)
+        cagr[ticker] = KL.CAGR(ohlc_dict[ticker])
+        sharpe[ticker] = KL.sharpe(ohlc_dict[ticker])
+        sortinos[ticker] = KL.sortino(ohlc_dict[ticker])
+        max_drawdown[ticker] = KL.max_dd(ohlc_dict[ticker])
+        total_trades_ind[ticker] = trade_count[ticker]
 
-KPI_df = pd.DataFrame([cagr, sharpe, sortinos, max_drawdown, total_trades_ind],
-                      index=["Return", "Sharpe", "Sortino", "Max Drawdown", "Total Trades"])
-print(KPI_df.T)
+    KPI_df = pd.DataFrame([cagr, sharpe, sortinos, max_drawdown, total_trades_ind],
+                          index=["Return", "Sharpe", "Sortino", "Max Drawdown", "Total Trades"])
+    print(KPI_df.T)
+    return KPI_df
 
 # General KPIs - (now 2,5% risk free rate, target = 0%)
-CAGR_strat = KL.CAGR(strategy_df)
-Sortino_strat = KL.sortino(strategy_df)
-Sharpe_strat = KL.sharpe(strategy_df)
-Max_Drawdown_strat = KL.max_dd(strategy_df)
-Total_trades = sum(trade_count.values())
+def general_KPIs_total(strategy_df, trade_count, KPI_ID_df):
+    CAGR_strat = KL.CAGR(strategy_df)
+    Sortino_strat = KL.sortino(strategy_df)
+    Sharpe_strat = KL.sharpe(strategy_df)
+    Max_Drawdown_strat = KL.max_dd(strategy_df)
+    Total_trades = sum(trade_count.values())
 
-# Get returns trading costs included
-Total_win = (wrs / 100) * Total_trades * mrpwt * Capital
-Total_loss = ((100 - wrs) / 100) * Total_trades * mrplt * Capital
-Return_Strat = Total_win - abs(Total_loss)
-begin_cap = len(tickers) * Capital
-Return_perc = (begin_cap + Return_Strat) / begin_cap - 1
+    wrs = sum(KPI_ID_df.T['Win Rate']) / len(KPI_ID_df.T['Win Rate'])
+    mrpwt = sum(KPI_ID_df.T['MR Per WT']) / len(KPI_ID_df.T['MR Per WT'])
+    mrplt = sum(KPI_ID_df.T['MR Per LT'].dropna()) / len(KPI_ID_df.T['MR Per LT'].dropna())
 
-General_indicators = pd.DataFrame([CAGR_strat, Sortino_strat, Sharpe_strat, Max_Drawdown_strat, Total_trades],
-                                  index=['Ret alt.', 'Sortino', 'Sharpe', 'Max Drawdown', 'Total Trades'])
-print(General_indicators.T)
+    # Get returns trading costs included
+    Total_win = (wrs / 100) * Total_trades * mrpwt * Capital
+    Total_loss = ((100 - wrs) / 100) * Total_trades * mrplt * Capital
+    Return_Strat = Total_win - abs(Total_loss)
+    begin_cap = len(tickers) * Capital
+    Return_perc = (begin_cap + Return_Strat) / begin_cap - 1
 
+    General_indicators = pd.DataFrame([CAGR_strat, Sortino_strat, Sharpe_strat, Max_Drawdown_strat, Total_trades],
+                                      index=['Ret alt.', 'Sortino', 'Sharpe', 'Max Drawdown', 'Total Trades'])
+    print(General_indicators.T)
+    return General_indicators
 
-# vizualization of strategy return
-(1 + strategy_df["ret"]).cumprod().plot()
+    #save to CSV
+    #(1+strategy_df["ret"]).cumprod().to_csv(r'last_2wk.csv')
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>> Buy-Hold Strategy <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 # For buy-hold strategy
-bh_data = deepcopy(historicalData)
 
-for ticker in historicalData:
-    bh_data[ticker]["ReturnsBH"] = TI.ReturnsBH(bh_data[ticker])
+def buy_hold_total(historicalData, KPI_df_total):
+    bh_data = deepcopy(historicalData)
 
+    for ticker in historicalData:
+        bh_data[ticker]["ReturnsBH"] = TI.ReturnsBH(bh_data[ticker])
 
-strategy_df2 = pd.DataFrame()
-for ticker in historicalData:
-    strategy_df2[ticker] = bh_data[ticker]["ReturnsBH"]
+    strategy_df2 = pd.DataFrame()
+    for ticker in historicalData:
+        strategy_df2[ticker] = bh_data[ticker]["ReturnsBH"]
 
-strategy_df2["ret"] = strategy_df2.mean(axis=1)
+    strategy_df2["ret"] = strategy_df2.mean(axis=1)
 
-CAGR_BH = KL.CAGR(strategy_df2)
-Max_dd_BH = KL.max_dd(strategy_df2)
+    CAGR_BH = KL.CAGR(strategy_df2)
+    Max_dd_BH = KL.max_dd(strategy_df2)
 
-BH_df = pd.DataFrame([CAGR_BH, Max_dd_BH], index=["CAGR", "Max dd"])
-print(BH_df.T)
+    BH_df = pd.DataFrame([CAGR_BH, Max_dd_BH], index=["CAGR", "Max dd"])
+    print(BH_df.T)
+    print(KPI_df_total)
+    return strategy_df2
 
-
-# Plot B-H strategy
-(1 + strategy_df2["ret"]).cumprod().plot()
 
 #BH performance per ticker
-BH_per_tick = {}
-for ticker in historicalData:
-    BH_per_tick[ticker] = (historicalData[ticker]['Close'][-1] / historicalData[ticker]['Open'][0]) - 1
+def buy_hold_ticker(KPI_df):
+    BH_per_tick = {}
+    for ticker in historicalData:
+        BH_per_tick[ticker] = (historicalData[ticker]['Close'][-1] / historicalData[ticker]['Open'][0]) - 1
 
-BH_per_tick_df = pd.DataFrame([BH_per_tick],
-                      index=["Return"])
-print(BH_per_tick_df.T)
+    BH_per_tick_df = pd.DataFrame([BH_per_tick],
+                          index=["Return"])
+    #print(BH_per_tick_df.T)
 
-test123 = KPI_df.append(BH_per_tick_df)
+    test123 = KPI_df.append(BH_per_tick_df)
+    #print(test123)
+    return test123
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Visuals <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+def strategy_BH_graphs(strategy_df2):
+    (1 + strategy_df2["ret"]).cumprod().plot()
+    (1 + strategy_df["ret"]).cumprod().plot()
 
-# (1+strategy_df["ret"]).cumprod().to_csv(r'last_2wk.csv')
-
-# vizualization of strategy per stock
-#(1 + ohlc_dict[ticker]["ret"]).cumprod().plot()
 
 # Plot return per trade (only for 1 stock, stock can be changed be changing 1st ticker)
-((trade_df['WM']["return"] - 1) * 100).plot()
+def plot_visuals(trade_df, ohlc_dict, strategy_df):
+    #?? graph
+    ((trade_df['WM']["return"] - 1) * 100).plot()
 
-# creating dataframe with daily returns
-'''strategy_df.index = pd.to_datetime(strategy_df.index)
-strategy_df.index = strategy_df.index.tz_localize('Europe/Berlin').tz_convert('America/Indiana/Petersburg')
-daily_ret_df = strategy_df.resample("D").sum(min_count=1).dropna()
-hhh = daily_ret_df['ret']
-n = 250
-ax = hhh.plot(kind='bar')
-ticks = ax.xaxis.get_ticklocs()
-ticklabels = [l.get_text() for l in ax.xaxis.get_ticklabels()]
-ax.xaxis.set_ticks(ticks[::n])
-ax.xaxis.set_ticklabels(ticklabels[::n])
-ax.figure.show()'''
+    # vizualization of strategy per stock
+    (1 + ohlc_dict['WM']["ret"]).cumprod().plot()
+
+    # creating dataframe with daily returns
+    strategy_df.index = pd.to_datetime(strategy_df.index)
+    strategy_df.index = strategy_df.index.tz_localize('Europe/Berlin').tz_convert('America/Indiana/Petersburg')
+    daily_ret_df = strategy_df.resample("D").sum(min_count=1).dropna()
+    hhh = daily_ret_df['ret']
+    n = 250
+    ax = hhh.plot(kind='bar')
+    ticks = ax.xaxis.get_ticklocs()
+    ticklabels = [l.get_text() for l in ax.xaxis.get_ticklabels()]
+    ax.xaxis.set_ticks(ticks[::n])
+    ax.xaxis.set_ticklabels(ticklabels[::n])
+    ax.figure.show()
+
+historicalData = get_data()
+trade_data = backtest_df(historicalData)[0]
+ohlc_dict = backtest_df(historicalData)[1]
+trade_count = backtest_df(historicalData)[2]
+strategy_df = backtest_df(historicalData)[3]
+
+#intra-day KPIs per ticker
+KPI_ID_df = intraday_ticker(trade_data)
+
+#intra-day KPIs total
+intraday_total(KPI_ID_df)
+
+#general KPIs per ticker
+KPI_df = general_KPIs_tickers(ohlc_dict, trade_count)
+
+#general KPIs total
+KPI_df_total = general_KPIs_total(strategy_df, trade_count, KPI_ID_df)
+
+#general KPIs per ticker vs Buy-hold per ticker
+general_per_tick_comparison = buy_hold_ticker(KPI_df)
+
+#general KPIs total vs Buy-hold total
+strategy_df2 = buy_hold_total(historicalData, KPI_df_total)
+
+#plot both graphs
+strategy_BH_graphs(strategy_df2)

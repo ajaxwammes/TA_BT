@@ -123,7 +123,6 @@ def data_in_df(tickers, ticker):
                 print('Pass for now:', ticker)
                 return 0
             df = dataDataframe(app, tickers, ticker)
-            print(df.tail)
         except Exception:
             #print('Need extra time to fetch data...')
             time.sleep(0.1)
@@ -260,8 +259,8 @@ while True:
         print('Another day with diamond hands! Now going to reboot')
         sys.exit()
     if features.current_time_hour_min_sec() == '09:25:20':
-        establish_connection()
-        print('Restarting IB, may the stonks be with us')
+        #establish_connection()
+        print('Market opens! May the stonks be with us')
     if int(features.current_time_min()) in {14, 29, 44, 59} and \
     int(features.current_time_sec()) == 20:
         if features.afterHours() == False:
