@@ -119,7 +119,7 @@ def data_in_df(tickers, ticker):
     counter = 1
     while True:
         try:
-            if counter > 20:
+            if counter > 30:
                 print('Pass for now:', ticker)
                 return 0
             df = dataDataframe(app, tickers, ticker)
@@ -205,7 +205,6 @@ def main():
     pos_df.drop_duplicates(inplace=True, ignore_index=True)
     tickers = features.what_tickers(app)
     app.reqOpenOrders()
-    time.sleep(0.5)
     ord_df = app.order_df
     ord_df.drop_duplicates(inplace=True, ignore_index=True)
     print('Account value:', round(account_value[-1], 2))
