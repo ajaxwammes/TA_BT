@@ -120,7 +120,7 @@ def data_in_df(tickers, ticker):
     while True:
         try:
             if counter > 30:
-                print('Pass for now:', ticker)
+                #print('Pass for now:', ticker)
                 return 0
             df = dataDataframe(app, tickers, ticker)
         except Exception:
@@ -244,7 +244,7 @@ def ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_
         elif pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] > 0:
             sell_conditions(ord_df, df, pos_df, ticker)
     else:
-        print(ticker, 'does not give a DF')
+        print('#~#', ticker, 'does not give a DF')
         pass
 
 app = TradeApp()

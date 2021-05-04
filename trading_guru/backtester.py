@@ -90,6 +90,8 @@ tickers = ['AWK', 'BMI', 'CWT', 'CWCO', 'ECL', 'ERII', 'AQUA', 'PNR', 'SBS', 'SJ
 # Capital per stock USD
 Capital = 5800
 
+max_portfolio_size = 30
+
 # Costs per trade USD
 Costs_per_trade = 0.05
 
@@ -155,27 +157,32 @@ def backtest_df(historicalData):
 
     # calculating return of strategy
     for ticker in ohlc_dict:
+        open_positions = 0
         print("Calculating daily returns for ", ticker)
         for i in range(1, len(ohlc_dict[ticker])):
             if tickers_signal[ticker] == "":
                 tickers_ret[ticker].append(0)
                 if ohlc_dict[ticker]["macd"][i] > ohlc_dict[ticker]["signal"][i] and \
-                        ohlc_dict[ticker]["stoch"][i] > 30 and \
-                        ohlc_dict[ticker]["stoch"][i] > ohlc_dict[ticker]["stoch"][i - 1]:
+                ohlc_dict[ticker]["stoch"][i] > 30 and \
+                open_positions <= max_portfolio_size and \
+                ohlc_dict[ticker]["stoch"][i] > ohlc_dict[ticker]["stoch"][i - 1]:
                     tickers_signal[ticker] = "Buy"
                     trade_count[ticker] += 1
-                    trade_data[ticker][trade_count[ticker]] = [ohlc_dict[ticker]["Close"][i]]
+                    trade_data[ticker][trade_count[ticker]] = [ohlc_dict[ticker]["Close"][i]] + [ohlc_dict[ticker]["trading_costs"][i]]
+                    open_positions += 1
 
             elif tickers_signal[ticker] == "Buy":
                 if ohlc_dict[ticker]["rsi"][i] > 76 and \
-                        ohlc_dict[ticker]["b_band_width"][i] < ohlc_dict[ticker]["b_band_mean"][i]:
+                ohlc_dict[ticker]["b_band_width"][i] < ohlc_dict[ticker]["b_band_mean"][i]:
                     tickers_signal[ticker] = ""
                     trade_data[ticker][trade_count[ticker]].append(
-                        (ohlc_dict[ticker]["Close"][i] - ohlc_dict[ticker]["slippage"][i]))
+                        (ohlc_dict[ticker]["Close"][i] - ohlc_dict[ticker]["slippage"][i])-[ohlc_dict[ticker]["trading_costs"][i]])
                     trade_count[ticker] += 1
                     tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i]
-                                                - ohlc_dict[ticker]["slippage"][i])
+                                                - ohlc_dict[ticker]["slippage"][i]
+                                                - ohlc_dict[ticker]["trading_costs"][i])
                                                / (ohlc_dict[ticker]["Close"][i - 1]) - 1)
+                    open_positions -= 1
 
                 else:
                     tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i] / ohlc_dict[ticker]["Close"][i - 1]) - 1)
@@ -192,6 +199,8 @@ def backtest_df(historicalData):
 
     # assuming that there is equal amount of capital allocated/invested to each stock
     strategy_df["ret"] = strategy_df.mean(axis=1)
+    # adjust to equal investment amount
+    strategy_df['ret'] = strategy_df['ret'] * (len(tickers) / max_portfolio_size)
 
     return trade_data, ohlc_dict, trade_count, strategy_df
 
@@ -349,6 +358,7 @@ def plot_visuals(trade_df, ohlc_dict, strategy_df):
     ax.figure.show()
 
 historicalData = get_data()
+
 trade_data = backtest_df(historicalData)[0]
 ohlc_dict = backtest_df(historicalData)[1]
 trade_count = backtest_df(historicalData)[2]
