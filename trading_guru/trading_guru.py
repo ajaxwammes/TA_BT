@@ -162,7 +162,7 @@ def buy(ticker, trade_count, df, quantity):
     app.reqIds(-1)
     time.sleep(2)
     order_id = app.nextValidOrderId
-    print('>>> buying', ticker,'-', order_id)
+    print('\033[92m', '>>> buying', ticker,'-', order_id, '\033[0m')
     limit_price = round(df['Close'][-1], 2)
     app.placeOrder(order_id, usTechStk(ticker), order_types.limitOrder("BUY", quantity, limit_price))
 
@@ -175,7 +175,7 @@ def sell_conditions(ord_df, df, pos_df, ticker):
             sell(ord_df, pos_df, ticker, orders)
         elif df["rsi"][-1] > SHV.rsi_threshold and df["b_band_width"][-1] < df["b_band_mean"][-1] and \
         len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'SELL')]) == 1:
-            print('>>> selling', ticker, 'triggered by b_bands + RSI')
+            print('\033[92m', '>>> selling', ticker, 'triggered by b_bands + RSI', '\033[0m')
             sell(ord_df, pos_df, ticker, orders)
         else:
             print('keep position for', ticker)
@@ -244,7 +244,7 @@ def ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_
         elif pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] > 0:
             sell_conditions(ord_df, df, pos_df, ticker)
     else:
-        print('#~#', ticker, 'does not give a DF')
+        print('\033[91m', ticker, 'does not give a DF', '\033[0m')
         pass
 
 app = TradeApp()
@@ -255,11 +255,11 @@ con_thread.start()
 #Running the code + smart sleep
 while True:
     if features.current_time_hour_min_sec() == '03:00:00':
-        print('Another day with diamond hands! Now going to reboot')
+        print('\033[1m', 'Another day with diamond hands! Now going to reboot', '\033[0m')
         sys.exit()
-    if features.current_time_hour_min_sec() == '09:25:20':
+    if features.current_time_hour_min_sec() == '09:30:00':
         #establish_connection()
-        print('Market opens! May the stonks be with us')
+        print('\033[1m', 'Market opens! May the stonks be with us', '\033[0m')
     if int(features.current_time_min()) in {14, 29, 44, 59} and \
     int(features.current_time_sec()) == 20:
         if features.afterHours() == False:
