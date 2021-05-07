@@ -13,6 +13,7 @@ Sharpe:     3.12
 Trades:     581
 """
 
+from colorama import Fore, Style
 from ibapi.client import EClient
 from ibapi.wrapper import EWrapper
 from ibapi.contract import Contract
@@ -103,12 +104,6 @@ def histData(req_num, contract, duration, candle_size):
 def websocket_con():
     app.run()
 
-def establish_connection():
-    app = TradeApp()
-    app.connect(host='127.0.0.1', port=SHV.port, clientId=23)
-    con_thread = threading.Thread(target=websocket_con, daemon=True)
-    con_thread.start()
-
 #Storing trade app object in dataframe
 def dataDataframe(TradeApp_obj, symbols, symbol):
     df = pd.DataFrame(TradeApp_obj.data[symbols.index(symbol)])
@@ -162,7 +157,7 @@ def buy(ticker, trade_count, df, quantity):
     app.reqIds(-1)
     time.sleep(2)
     order_id = app.nextValidOrderId
-    print('\033[92m' + '>>> buying' + '\033[0m', ticker +'-' + order_id)
+    print(f"{Fore.GREEN}>>> buying{Style.RESET_ALL}", ticker, '-', order_id)
     limit_price = round(df['Close'][-1], 2)
     app.placeOrder(order_id, usTechStk(ticker), order_types.limitOrder("BUY", quantity, limit_price))
 
@@ -175,7 +170,7 @@ def sell_conditions(ord_df, df, pos_df, ticker):
             sell(ord_df, pos_df, ticker, orders)
         elif df["rsi"][-1] > SHV.rsi_threshold and df["b_band_width"][-1] < df["b_band_mean"][-1] and \
         len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'SELL')]) == 1:
-            print('\033[92m' + '>>> selling'+ '\033[0m', ticker, 'triggered by b_bands + RSI')
+            print(f"{Fore.GREEN}>>> selling{Style.RESET_ALL}", ticker, 'triggered by b_bands + RSI')
             sell(ord_df, pos_df, ticker, orders)
         else:
             print('keep position for', ticker)
@@ -244,7 +239,7 @@ def ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_
         elif pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] > 0:
             sell_conditions(ord_df, df, pos_df, ticker)
     else:
-        print(ticker, '\033[91m' + 'does not give a DF' + '\033[0m')
+        print('>>!', ticker, 'does not give a DF')
         pass
 
 app = TradeApp()
@@ -255,11 +250,10 @@ con_thread.start()
 #Running the code + smart sleep
 while True:
     if features.current_time_hour_min_sec() == '03:00:00':
-        print('\033[1m' + 'Another day with diamond hands! Now going to reboot' + '\033[0m')
+        print(f"{Fore.CYAN}Another day with diamond hands! Now going to reboot{Style.RESET_ALL}")
         sys.exit()
     if features.current_time_hour_min_sec() == '09:30:00':
-        #establish_connection()
-        print('\033[1m' + 'Market opens! May the stonks be with us' + '\033[0m')
+        print(f"{Fore.CYAN}Market opens! May the stonks be with us{Style.RESET_ALL}")
     if int(features.current_time_min()) in {14, 29, 44, 59} and \
     int(features.current_time_sec()) == 20:
         if features.afterHours() == False:
