@@ -136,9 +136,9 @@ def backtest_df(historicalData):
         ohlc_dict[ticker]["stoch"] = TI.stochOscltr(ohlc_dict[ticker])
         ohlc_dict[ticker]["macd"] = TI.MACD(ohlc_dict[ticker])["MACD"]
         ohlc_dict[ticker]["signal"] = TI.MACD(ohlc_dict[ticker])["Signal"]
-        ohlc_dict[ticker]['time'] = ohlc_dict[ticker].index.str[10:]
+        #    ohlc_dict[ticker]['time'] = ohlc_dict[ticker].index.str[10:]
         #    ohlc_dict[ticker]['day_sav'] = TI.daylight_savings(ohlc_dict[ticker])
-        ohlc_dict[ticker]["atr"] = TI.atr(ohlc_dict[ticker], 80)
+        #    ohlc_dict[ticker]["atr"] = TI.atr(ohlc_dict[ticker], 80)
         ohlc_dict[ticker]["rsi"] = TI.rsi(ohlc_dict[ticker], 20)
         ohlc_dict[ticker]["slippage"] = TI.slippage(ohlc_dict[ticker])
         ohlc_dict[ticker]["trading_costs"] = TI.trading_costs(ohlc_dict[ticker], Capital)
@@ -168,17 +168,20 @@ def backtest_df(historicalData):
                 ohlc_dict[ticker]["stoch"][i] > ohlc_dict[ticker]["stoch"][i - 1]:
                     tickers_signal[ticker] = "Buy"
                     trade_count[ticker] += 1
-                    trade_data[ticker][trade_count[ticker]] = [ohlc_dict[ticker]["Close"][i]] + [ohlc_dict[ticker]["trading_costs"][i]]
+                    #trade_data[ticker][trade_count[ticker]] = [ohlc_dict[ticker]["Close"][i]]
+                    trade_data[ticker][trade_count[ticker]] = ([ohlc_dict[ticker]["Close"][i] + ohlc_dict[ticker]["trading_costs"][i]])
                     open_positions += 1
 
             elif tickers_signal[ticker] == "Buy":
-                if ohlc_dict[ticker]["rsi"][i] > 76 and \
+                if ohlc_dict[ticker]["rsi"][i] > 75 and \
                 ohlc_dict[ticker]["b_band_width"][i] < ohlc_dict[ticker]["b_band_mean"][i]:
                     tickers_signal[ticker] = ""
                     trade_data[ticker][trade_count[ticker]].append(
-                        (ohlc_dict[ticker]["Close"][i] - ohlc_dict[ticker]["slippage"][i])-[ohlc_dict[ticker]["trading_costs"][i]])
+                        #(ohlc_dict[ticker]["Close"][i] - ohlc_dict[ticker]["slippage"][i]))
+                        (ohlc_dict[ticker]["Close"][i] - ohlc_dict[ticker]["slippage"][i] - ohlc_dict[ticker]["trading_costs"][i]))
                     trade_count[ticker] += 1
                     tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i]
+                                                #- ohlc_dict[ticker]["slippage"][i])
                                                 - ohlc_dict[ticker]["slippage"][i]
                                                 - ohlc_dict[ticker]["trading_costs"][i])
                                                / (ohlc_dict[ticker]["Close"][i - 1]) - 1)
