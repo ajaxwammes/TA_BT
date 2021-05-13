@@ -22,6 +22,8 @@ from copy import deepcopy
 from trading_guru.dependencies import technical_indicators as TI
 from trading_guru.features_backtester import KPIs_Long as KL, KPIs_IntraDay as KI
 
+pd.options.mode.chained_assignment = None  # default='warn'
+
 
 class TradeApp(EWrapper, EClient):
     def __init__(self):
@@ -88,12 +90,9 @@ tickers = ['AWK', 'BMI', 'CWT', 'CWCO', 'ECL', 'ERII', 'AQUA', 'PNR', 'SBS', 'SJ
            ]
 
 # Capital per stock USD
-Capital = 5800
+Capital = 250000
 
 max_portfolio_size = 30
-
-# Costs per trade USD
-Costs_per_trade = 0.05
 
 
 def dataDataframe(TradeApp_obj, symbols, symbol):
@@ -150,6 +149,7 @@ def backtest_df(historicalData):
         ohlc_dict[ticker]["b_band_width"] = TI.bollBnd(ohlc_dict[ticker])['BB_width']
 
         ohlc_dict[ticker].dropna(inplace=True)
+        ohlc_dict[ticker]["trades"] = 0
         trade_count[ticker] = 0
         tickers_signal[ticker] = ""
         tickers_ret[ticker] = [0]
@@ -157,35 +157,33 @@ def backtest_df(historicalData):
 
     # calculating return of strategy
     for ticker in ohlc_dict:
-        open_positions = 0
+        #open_positions = 0
         print("Calculating daily returns for ", ticker)
         for i in range(1, len(ohlc_dict[ticker])):
             if tickers_signal[ticker] == "":
                 tickers_ret[ticker].append(0)
                 if ohlc_dict[ticker]["macd"][i] > ohlc_dict[ticker]["signal"][i] and \
                 ohlc_dict[ticker]["stoch"][i] > 30 and \
-                open_positions <= max_portfolio_size and \
+                ohlc_dict[ticker]["rsi"][i] < 75 and \
+                ohlc_dict[ticker]["b_band_width"][i] < ohlc_dict[ticker]["b_band_mean"][i] and \
                 ohlc_dict[ticker]["stoch"][i] > ohlc_dict[ticker]["stoch"][i - 1]:
                     tickers_signal[ticker] = "Buy"
                     trade_count[ticker] += 1
-                    #trade_data[ticker][trade_count[ticker]] = [ohlc_dict[ticker]["Close"][i]]
+                    ohlc_dict[ticker]["trades"][i] = 1
                     trade_data[ticker][trade_count[ticker]] = ([ohlc_dict[ticker]["Close"][i] + ohlc_dict[ticker]["trading_costs"][i]])
-                    open_positions += 1
 
             elif tickers_signal[ticker] == "Buy":
                 if ohlc_dict[ticker]["rsi"][i] > 75 and \
                 ohlc_dict[ticker]["b_band_width"][i] < ohlc_dict[ticker]["b_band_mean"][i]:
                     tickers_signal[ticker] = ""
                     trade_data[ticker][trade_count[ticker]].append(
-                        #(ohlc_dict[ticker]["Close"][i] - ohlc_dict[ticker]["slippage"][i]))
                         (ohlc_dict[ticker]["Close"][i] - ohlc_dict[ticker]["slippage"][i] - ohlc_dict[ticker]["trading_costs"][i]))
                     trade_count[ticker] += 1
+                    ohlc_dict[ticker]["trades"][i] = 1
                     tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i]
-                                                #- ohlc_dict[ticker]["slippage"][i])
                                                 - ohlc_dict[ticker]["slippage"][i]
                                                 - ohlc_dict[ticker]["trading_costs"][i])
                                                / (ohlc_dict[ticker]["Close"][i - 1]) - 1)
-                    open_positions -= 1
 
                 else:
                     tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i] / ohlc_dict[ticker]["Close"][i - 1]) - 1)
@@ -203,7 +201,7 @@ def backtest_df(historicalData):
     # assuming that there is equal amount of capital allocated/invested to each stock
     strategy_df["ret"] = strategy_df.mean(axis=1)
     # adjust to equal investment amount
-    strategy_df['ret'] = strategy_df['ret'] * (len(tickers) / max_portfolio_size)
+    #strategy_df['ret'] = strategy_df['ret'] * (len(tickers) / max_portfolio_size)
 
     return trade_data, ohlc_dict, trade_count, strategy_df
 
@@ -387,3 +385,5 @@ strategy_df2 = buy_hold_total(historicalData, KPI_df_total)
 
 #plot both graphs
 strategy_BH_graphs(strategy_df2)
+
+#plot graph when trades are made

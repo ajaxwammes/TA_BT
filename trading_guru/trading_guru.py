@@ -13,7 +13,6 @@ Sharpe:     3.12
 Trades:     581
 """
 
-from colorama import Fore, Style
 from ibapi.client import EClient
 from ibapi.wrapper import EWrapper
 from ibapi.contract import Contract
@@ -144,6 +143,8 @@ def buy_conditions(ord_df, investment_per_stock, df, ticker, quantity, trade_cou
         if df["macd"][-1] > df["signal"][-1] and \
         df["stoch"][-1] > SHV.stoch_threshold and \
         df["stoch"][-1] > df["stoch"][-2] and \
+        df["rsi"][-1] < SHV.rsi_threshold and \
+        df["b_band_width"][-1] > df["b_band_mean"][-1] and \
         features.analyst_ratings(ticker) < SHV.analyst_rating_threshold and \
         account_value[-1] > investment_per_stock and \
         len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'BUY')]) == 0 and \
@@ -157,7 +158,7 @@ def buy(ticker, trade_count, df, quantity):
     app.reqIds(-1)
     time.sleep(2)
     order_id = app.nextValidOrderId
-    print(f"{Fore.GREEN}>>> buying{Style.RESET_ALL}", ticker, '-', order_id)
+    print(">>> buying", ticker, '-', order_id)
     limit_price = round(df['Close'][-1], 2)
     app.placeOrder(order_id, usTechStk(ticker), order_types.limitOrder("BUY", quantity, limit_price))
 
@@ -168,9 +169,10 @@ def sell_conditions(ord_df, df, pos_df, ticker):
         len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'SELL')]) == 1:
             print('> selling', ticker, 'triggered by analyst ratings')
             sell(ord_df, pos_df, ticker, orders)
-        elif df["rsi"][-1] > SHV.rsi_threshold and df["b_band_width"][-1] < df["b_band_mean"][-1] and \
+        elif df["rsi"][-1] > SHV.rsi_threshold and \
+             df["b_band_width"][-1] < df["b_band_mean"][-1] and \
         len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'SELL')]) == 1:
-            print(f"{Fore.GREEN}>>> selling{Style.RESET_ALL}", ticker, 'triggered by b_bands + RSI')
+            print(">>> selling", ticker, 'triggered by b_bands + RSI')
             sell(ord_df, pos_df, ticker, orders)
         else:
             print('keep position for', ticker)
@@ -250,10 +252,10 @@ con_thread.start()
 #Running the code + smart sleep
 while True:
     if features.current_time_hour_min_sec() == '03:00:00':
-        print(f"{Fore.CYAN}Another day with diamond hands! Now going to reboot{Style.RESET_ALL}")
+        print("Another day with diamond hands! Now going to reboot")
         sys.exit()
     if features.current_time_hour_min_sec() == '09:30:00':
-        print(f"{Fore.CYAN}Market opens! May the stonks be with us{Style.RESET_ALL}")
+        print("Market opens! May the stonks be with us")
     if int(features.current_time_min()) in {14, 29, 44, 59} and \
     int(features.current_time_sec()) == 20:
         if features.afterHours() == False:
