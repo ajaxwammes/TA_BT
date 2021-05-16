@@ -155,91 +155,51 @@ def backtest_df(historicalData):
         tickers_ret[ticker] = [0]
         trade_data[ticker] = {}
 
-    # getting the buy signals, without max portfolio length
-    for ticker in ohlc_dict:
-        print("Calculating daily returns for ", ticker)
-        for i in range(1, len(ohlc_dict[ticker])):
-            if tickers_signal[ticker] == "":
-                tickers_ret[ticker].append(0)
-                if ohlc_dict[ticker]["macd"][i] > ohlc_dict[ticker]["signal"][i] and \
-                ohlc_dict[ticker]["stoch"][i] > 30 and \
-                ohlc_dict[ticker]["rsi"][i] < 75 and \
-                ohlc_dict[ticker]["b_band_width"][i] < ohlc_dict[ticker]["b_band_mean"][i] and \
-                ohlc_dict[ticker]["stoch"][i] > ohlc_dict[ticker]["stoch"][i - 1]:
-                    tickers_signal[ticker] = "Buy"
-                    #trade_count[ticker] += 1
-                    ohlc_dict[ticker]["trades"][i] = 1
-                    #trade_data[ticker][trade_count[ticker]] = ([ohlc_dict[ticker]["Close"][i] + ohlc_dict[ticker]["trading_costs"][i]])
-
-            elif tickers_signal[ticker] == "Buy":
-                if ohlc_dict[ticker]["rsi"][i] > 75 and \
-                ohlc_dict[ticker]["b_band_width"][i] < ohlc_dict[ticker]["b_band_mean"][i]:
-                    tickers_signal[ticker] = ""
-                    #trade_count[ticker] += 1
-                    ohlc_dict[ticker]["trades"][i] = -1
-                    #trade_data[ticker][trade_count[ticker]].append(
-                    #    (ohlc_dict[ticker]["Close"][i] - ohlc_dict[ticker]["slippage"][i] - ohlc_dict[ticker]["trading_costs"][i]))
-                    #tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i]
-                    #                            - ohlc_dict[ticker]["slippage"][i]
-                    #                            - ohlc_dict[ticker]["trading_costs"][i])
-                    #                           / (ohlc_dict[ticker]["Close"][i - 1]) - 1)
-
-
-            #create 1 DF of only technical buy signals
-    LoL = []
-    for ticker in ohlc_dict:
-        LoL.append(ohlc_dict[ticker]['trades'])
-        LOL2 = pd.DataFrame(LoL)
-        LOL3 = LOL2.T
-        LOL3.columns = [tickers]
-
-        # convert the values to a flat array
-        array = np.array(LOL3).flatten()
-
-        # replace values as stated in the question
-        cumsum = 0
-        for i, x in enumerate(array):
-            if not np.isnan(x):
-                if (cumsum + x) > 30:
-                    array[i] = 0
-                else:
-                    cumsum += x
-
-        # convert new values to dataframe
-        LoL3_new = pd.DataFrame(array.reshape(LOL3.shape),
-                                columns=LOL3.columns,
-                                index=LOL3.index)
-
+    # calculating return of strategy
+    open_positions = 0
+    for i in range(len(ohlc_dict['AWK'])):
         for ticker in ohlc_dict:
-            ohlc_dict[ticker]['trades'] = LoL3_new[ticker]
-            print("Calculating daily returns for ", ticker)
-            for i in range(1, len(ohlc_dict[ticker])):
+            try:
                 if tickers_signal[ticker] == "":
                     tickers_ret[ticker].append(0)
-                    if ohlc_dict[ticker]["trades"][i] == 1:
+                    if ohlc_dict[ticker]["macd"][i] > ohlc_dict[ticker]["signal"][i] and \
+                    ohlc_dict[ticker]["stoch"][i] > 30 and \
+                    ohlc_dict[ticker]["rsi"][i] < 75 and \
+                    ohlc_dict[ticker]["b_band_width"][i] < ohlc_dict[ticker]["b_band_mean"][i] and \
+                    ohlc_dict[ticker]["stoch"][i] > ohlc_dict[ticker]["stoch"][i - 1] and \
+                    open_positions <= max_portfolio_size:
                         tickers_signal[ticker] = "Buy"
+                        open_positions += 1
                         trade_count[ticker] += 1
+                        ohlc_dict[ticker]["trades"][i] = 1
                         trade_data[ticker][trade_count[ticker]] = ([ohlc_dict[ticker]["Close"][i] + ohlc_dict[ticker]["trading_costs"][i]])
 
-                elif tickers_signal[ticker] == "Buy":
-                    if ohlc_dict[ticker]["trades"][i] == -1:
-                        tickers_signal[ticker] = ""
-                        trade_count[ticker] += 1
-                        trade_data[ticker][trade_count[ticker]].append(
-                            (ohlc_dict[ticker]["Close"][i] - ohlc_dict[ticker]["slippage"][i] - ohlc_dict[ticker]["trading_costs"][i]))
-                        tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i]
-                                                    - ohlc_dict[ticker]["slippage"][i]
-                                                    - ohlc_dict[ticker]["trading_costs"][i])
-                                                   / (ohlc_dict[ticker]["Close"][i - 1]) - 1)
-
+                elif tickers_signal[ticker] == "Buy" and \
+                ohlc_dict[ticker]["rsi"][i] > 75 and \
+                ohlc_dict[ticker]["b_band_width"][i] < ohlc_dict[ticker]["b_band_mean"][i]:
+                    tickers_signal[ticker] = ""
+                    trade_data[ticker][trade_count[ticker]].append(
+                        (ohlc_dict[ticker]["Close"][i] - ohlc_dict[ticker]["slippage"][i] - ohlc_dict[ticker]["trading_costs"][i]))
+                    open_positions -= 1
+                    trade_count[ticker] += 1
+                    ohlc_dict[ticker]["trades"][i] = 1
+                    tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i]
+                                                - ohlc_dict[ticker]["slippage"][i]
+                                                - ohlc_dict[ticker]["trading_costs"][i])
+                                               / (ohlc_dict[ticker]["Close"][i - 1]) - 1)
 
                 else:
                     tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i] / ohlc_dict[ticker]["Close"][i - 1]) - 1)
 
+            except Exception:
+                continue
+
+    for ticker in ohlc_dict:
         if trade_count[ticker] % 2 != 0:
             trade_data[ticker][trade_count[ticker]].append(ohlc_dict[ticker]["Close"][-1])
 
-        ohlc_dict[ticker]["ret"] = np.array(tickers_ret[ticker])
+    for ticker in ohlc_dict:
+        ohlc_dict[ticker]["ret"] = np.array(tickers_ret[ticker][:len(ohlc_dict[ticker])])
 
     # make data frame to show returns of all tickers per time period
     strategy_df = pd.DataFrame()
@@ -249,7 +209,7 @@ def backtest_df(historicalData):
     # assuming that there is equal amount of capital allocated/invested to each stock
     strategy_df["ret"] = strategy_df.mean(axis=1)
     # adjust to equal investment amount
-    #strategy_df['ret'] = strategy_df['ret'] * (len(tickers) / max_portfolio_size)
+    strategy_df['ret'] = strategy_df['ret'] * (len(tickers) / max_portfolio_size)
 
     return trade_data, ohlc_dict, trade_count, strategy_df
 
