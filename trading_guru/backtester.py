@@ -345,6 +345,15 @@ def strategy_BH_graphs(strategy_df2):
     (1 + strategy_df["ret"]).cumprod().plot()
 
 
+def timing_trades(ohlc_dict):
+    LoL = []
+    for ticker in ohlc_dict:
+        LoL.append(ohlc_dict[ticker]['trades'])
+        LOL2 = pd.DataFrame(LoL)
+        LOL3 = LOL2.T
+        LOL3['total'] = np.sum(LOL3, axis=1)
+        LOL3['total'].plot()
+
 # Plot return per trade (only for 1 stock, stock can be changed be changing 1st ticker)
 def plot_visuals(trade_df, ohlc_dict, strategy_df):
     #?? graph
@@ -395,3 +404,4 @@ strategy_df2 = buy_hold_total(historicalData, KPI_df_total)
 strategy_BH_graphs(strategy_df2)
 
 #plot graph when trades are made
+timing_trades(ohlc_dict)
