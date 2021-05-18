@@ -116,7 +116,7 @@ def get_data():
     data = {}
     for ticker in tickers:
         print("Fetching data for", ticker)
-        histData(tickers.index(ticker), usTechStk(ticker), '1 Y', '15 mins')
+        histData(tickers.index(ticker), usTechStk(ticker), '7 Y', '10 mins')
         time.sleep(10)
         data[ticker] = data_in_df(tickers, ticker)
     return data
@@ -157,7 +157,8 @@ def backtest_df(historicalData):
 
     # calculating return of strategy
     open_positions = 0
-    for i in range(len(ohlc_dict['AWK'])):
+    longest_ticker = len(sorted(historicalData.values(), key=len)[-1])
+    for i in range(1, longest_ticker):
         for ticker in ohlc_dict:
             try:
                 if tickers_signal[ticker] == "":
@@ -182,7 +183,7 @@ def backtest_df(historicalData):
                         (ohlc_dict[ticker]["Close"][i] - ohlc_dict[ticker]["slippage"][i] - ohlc_dict[ticker]["trading_costs"][i]))
                     open_positions -= 1
                     trade_count[ticker] += 1
-                    ohlc_dict[ticker]["trades"][i] = 1
+                    ohlc_dict[ticker]["trades"][i] = -1
                     tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i]
                                                 - ohlc_dict[ticker]["slippage"][i]
                                                 - ohlc_dict[ticker]["trading_costs"][i])
@@ -296,9 +297,6 @@ def general_KPIs_total(strategy_df, trade_count, KPI_ID_df):
     print(General_indicators.T)
     return General_indicators
 
-    #save to CSV
-    #(1+strategy_df["ret"]).cumprod().to_csv(r'last_2wk.csv')
-
 # >>>>>>>>>>>>>>>>>>>>>>>>>> Buy-Hold Strategy <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 # For buy-hold strategy
@@ -343,6 +341,8 @@ def buy_hold_ticker(KPI_df):
 def strategy_BH_graphs(strategy_df2):
     (1 + strategy_df2["ret"]).cumprod().plot()
     (1 + strategy_df["ret"]).cumprod().plot()
+    # save to CSV
+    (1+strategy_df["ret"]).cumprod().to_csv(r'april3.csv')
 
 
 def timing_trades(ohlc_dict):
@@ -351,6 +351,7 @@ def timing_trades(ohlc_dict):
         LoL.append(ohlc_dict[ticker]['trades'])
         LOL2 = pd.DataFrame(LoL)
         LOL3 = LOL2.T
+        #LOL3.columns = tickers
         LOL3['total'] = np.sum(LOL3, axis=1)
         LOL3['total'].plot()
 
