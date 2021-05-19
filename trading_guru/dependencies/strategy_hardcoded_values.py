@@ -24,7 +24,7 @@ ticker_symbols = ['AWK', 'BMI', 'CWT', 'CWCO', 'ECL', 'ERII', 'AQUA', 'PNR', 'SB
 
 
 #the duration between scans / ticker size (1,3,5,10,15,30)
-ticker_size = 15
+ticker_size = 10
 
 #ticker size, adapted form
 ticker_size_mins = str(ticker_size) + ' ' + 'mins'
@@ -32,7 +32,7 @@ ticker_size_mins = str(ticker_size) + ' ' + 'mins'
 #the threshold value for the stochastic indicator
 stoch_threshold = 30
 
-#threshold value for RSI
+#RSI base value (might differ caused by ATR)
 rsi_threshold = 75
 
 #analyst rating threshold, after which to sell a stock (1 best - 5 worst)

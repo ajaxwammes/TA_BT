@@ -28,7 +28,6 @@ import sys
 
 account_value = []
 
-
 class TradeApp(EWrapper, EClient): 
     def __init__(self):
         EClient.__init__(self, self) 
@@ -113,7 +112,7 @@ def data_in_df(tickers, ticker):
     counter = 1
     while True:
         try:
-            if counter > 30:
+            if counter > 31:
                 #print('Pass for now:', ticker)
                 return 0
             df = dataDataframe(app, tickers, ticker)
@@ -143,7 +142,7 @@ def buy_conditions(ord_df, investment_per_stock, df, ticker, quantity, trade_cou
         if df["macd"][-1] > df["signal"][-1] and \
         df["stoch"][-1] > SHV.stoch_threshold and \
         df["stoch"][-1] > df["stoch"][-2] and \
-        df["rsi"][-1] < SHV.rsi_threshold and \
+        df["rsi"][-1] < features.RSI_variable(df) and \
         df["b_band_width"][-1] > df["b_band_mean"][-1] and \
         features.analyst_ratings(ticker) < SHV.analyst_rating_threshold and \
         account_value[-1] > investment_per_stock and \
@@ -169,7 +168,7 @@ def sell_conditions(ord_df, df, pos_df, ticker):
         len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'SELL')]) == 1:
             print('> selling', ticker, 'triggered by analyst ratings')
             sell(ord_df, pos_df, ticker, orders)
-        elif df["rsi"][-1] > SHV.rsi_threshold and \
+        elif df["rsi"][-1] > features.RSI_variable(df) and \
              df["b_band_width"][-1] < df["b_band_mean"][-1] and \
         len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'SELL')]) == 1:
             print(">>> selling", ticker, 'triggered by b_bands + RSI')

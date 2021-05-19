@@ -20,7 +20,7 @@ import time
 import numpy as np
 from copy import deepcopy
 from trading_guru.dependencies import technical_indicators as TI
-from trading_guru.features_backtester import KPIs_Long as KL, KPIs_IntraDay as KI
+from trading_guru.features_backtester import KPIs_Long as KL, KPIs_IntraDay as KI, variable_triggers as vt
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -94,12 +94,10 @@ Capital = 250000
 
 max_portfolio_size = 30
 
-
 def dataDataframe(TradeApp_obj, symbols, symbol):
     df = pd.DataFrame(TradeApp_obj.data[symbols.index(symbol)])
     df.set_index("Date", inplace=True)
     return df
-
 
 def data_in_df(tickers, ticker):
     while True:
@@ -111,25 +109,21 @@ def data_in_df(tickers, ticker):
             continue
         return df
 
-
 def get_data():
     data = {}
     for ticker in tickers:
         print("Fetching data for", ticker)
-        histData(tickers.index(ticker), usTechStk(ticker), '7 Y', '10 mins')
+        histData(tickers.index(ticker), usTechStk(ticker), '1 Y', '10 mins')
         time.sleep(10)
         data[ticker] = data_in_df(tickers, ticker)
     return data
+
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Backtesting <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 # merging the indicators in 1 DF
 def backtest_df(historicalData):
     ohlc_dict = deepcopy(historicalData)
-    tickers_signal = {}
-    tickers_ret = {}
-    trade_count = {}
-    trade_data = {}
     for ticker in historicalData:
         print("Calculating for ", ticker)
         ohlc_dict[ticker]["stoch"] = TI.stochOscltr(ohlc_dict[ticker])
@@ -137,7 +131,7 @@ def backtest_df(historicalData):
         ohlc_dict[ticker]["signal"] = TI.MACD(ohlc_dict[ticker])["Signal"]
         #    ohlc_dict[ticker]['time'] = ohlc_dict[ticker].index.str[10:]
         #    ohlc_dict[ticker]['day_sav'] = TI.daylight_savings(ohlc_dict[ticker])
-        #    ohlc_dict[ticker]["atr"] = TI.atr(ohlc_dict[ticker], 80)
+        ohlc_dict[ticker]["atr"] = TI.atr(ohlc_dict[ticker], 80)
         ohlc_dict[ticker]["rsi"] = TI.rsi(ohlc_dict[ticker], 20)
         ohlc_dict[ticker]["slippage"] = TI.slippage(ohlc_dict[ticker])
         ohlc_dict[ticker]["trading_costs"] = TI.trading_costs(ohlc_dict[ticker], Capital)
@@ -147,8 +141,28 @@ def backtest_df(historicalData):
         ohlc_dict[ticker]["bollBnd_dn"] = TI.bollBnd(ohlc_dict[ticker])['BB_dn']
         ohlc_dict[ticker]["b_band_mean"] = TI.bollBnd(ohlc_dict[ticker])['BB_mean']
         ohlc_dict[ticker]["b_band_width"] = TI.bollBnd(ohlc_dict[ticker])['BB_width']
-
         ohlc_dict[ticker].dropna(inplace=True)
+    return ohlc_dict
+
+def volatility_df(ohlc_dict):
+    #get overall volatility dataframe
+    print('get volatility DF')
+    vol_df = []
+    for ticker in ohlc_dict:
+        vol_df.append(ohlc_dict[ticker]['atr'])
+    vol_df1 = pd.DataFrame(vol_df)
+    vol_df1 = vol_df1.T
+    vol_df1['mean'] = vol_df1.mean(axis=1)
+    vol_df1['roll_mean'] = vol_df1['mean'].rolling(window=60, min_periods=1).mean()
+    vol_final = vol_df1[['mean', 'roll_mean']]
+    return vol_final
+
+def backtester(ohlc_dict, vol_final):
+    tickers_signal = {}
+    tickers_ret = {}
+    trade_count = {}
+    trade_data = {}
+    for ticker in ohlc_dict:
         ohlc_dict[ticker]["trades"] = 0
         trade_count[ticker] = 0
         tickers_signal[ticker] = ""
@@ -165,7 +179,7 @@ def backtest_df(historicalData):
                     tickers_ret[ticker].append(0)
                     if ohlc_dict[ticker]["macd"][i] > ohlc_dict[ticker]["signal"][i] and \
                     ohlc_dict[ticker]["stoch"][i] > 30 and \
-                    ohlc_dict[ticker]["rsi"][i] < 75 and \
+                    ohlc_dict[ticker]["rsi"][i] < vt.RSI_variable(vol_final, i) and \
                     ohlc_dict[ticker]["b_band_width"][i] < ohlc_dict[ticker]["b_band_mean"][i] and \
                     ohlc_dict[ticker]["stoch"][i] > ohlc_dict[ticker]["stoch"][i - 1] and \
                     open_positions <= max_portfolio_size:
@@ -176,7 +190,7 @@ def backtest_df(historicalData):
                         trade_data[ticker][trade_count[ticker]] = ([ohlc_dict[ticker]["Close"][i] + ohlc_dict[ticker]["trading_costs"][i]])
 
                 elif tickers_signal[ticker] == "Buy" and \
-                ohlc_dict[ticker]["rsi"][i] > 75 and \
+                ohlc_dict[ticker]["rsi"][i] > vt.RSI_variable(vol_final, i) and \
                 ohlc_dict[ticker]["b_band_width"][i] < ohlc_dict[ticker]["b_band_mean"][i]:
                     tickers_signal[ticker] = ""
                     trade_data[ticker][trade_count[ticker]].append(
@@ -191,7 +205,6 @@ def backtest_df(historicalData):
 
                 else:
                     tickers_ret[ticker].append((ohlc_dict[ticker]["Close"][i] / ohlc_dict[ticker]["Close"][i - 1]) - 1)
-
             except Exception:
                 continue
 
@@ -202,17 +215,21 @@ def backtest_df(historicalData):
     for ticker in ohlc_dict:
         ohlc_dict[ticker]["ret"] = np.array(tickers_ret[ticker][:len(ohlc_dict[ticker])])
 
+    return trade_data, ohlc_dict, trade_count
+
+
+def strategy_df(ohlc_dict):
     # make data frame to show returns of all tickers per time period
     strategy_df = pd.DataFrame()
     for ticker in historicalData:
         strategy_df[ticker] = ohlc_dict[ticker]["ret"]
-
     # assuming that there is equal amount of capital allocated/invested to each stock
     strategy_df["ret"] = strategy_df.mean(axis=1)
     # adjust to equal investment amount
     strategy_df['ret'] = strategy_df['ret'] * (len(tickers) / max_portfolio_size)
+    return strategy_df
 
-    return trade_data, ohlc_dict, trade_count, strategy_df
+
 
 # >>>>>>>>>>>>>>>>>>>> Get Intra-day KPIs of strategy <<<<<<<<<<<<<<<<<<<<<<<
 
@@ -378,10 +395,12 @@ def plot_visuals(trade_df, ohlc_dict, strategy_df):
 
 historicalData = get_data()
 
-trade_data = backtest_df(historicalData)[0]
-ohlc_dict = backtest_df(historicalData)[1]
-trade_count = backtest_df(historicalData)[2]
-strategy_df = backtest_df(historicalData)[3]
+ohlc_dict = backtest_df(historicalData)
+vol_final = volatility_df(ohlc_dict)
+trade_data = backtester(ohlc_dict, vol_final)[0]
+ohlc_dict = backtester(ohlc_dict, vol_final)[1]
+trade_count = backtester(ohlc_dict, vol_final)[2]
+strategy_df = strategy_df(ohlc_dict)
 
 #intra-day KPIs per ticker
 KPI_ID_df = intraday_ticker(trade_data)

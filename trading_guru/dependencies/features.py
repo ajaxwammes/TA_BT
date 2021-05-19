@@ -73,6 +73,18 @@ def afterHours():
     else:
         return True
 
+def RSI_variable(df):
+    RSI_neutral = SHV.rsi_threshold
+    average_volatiliy = df['atr'][-80:]
+    current_volatility = df['atr'][-1]
+    if average_volatiliy > current_volatility:
+        RSI = RSI_neutral - 1
+    elif average_volatiliy < current_volatility:
+        RSI = RSI_neutral + 1
+    else:
+        RSI = RSI_neutral
+    return RSI
+
 
 
 '''
