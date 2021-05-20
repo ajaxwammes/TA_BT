@@ -369,7 +369,7 @@ def timing_trades(ohlc_dict2):
         LOL3 = LOL3.groupby(level=0).sum()
         LOL3['total'] = np.sum(LOL3.abs(), axis=1)
         LOL3['total'].plot()
-        LOL3['total'].to_csv(r'trades_1y.csv')
+        #LOL3['total'].to_csv(r'trades_1y.csv')
 
 # Plot return per trade (only for 1 stock, stock can be changed be changing 1st ticker)
 def plot_visuals(trade_df, ohlc_dict2, strategy_df):
