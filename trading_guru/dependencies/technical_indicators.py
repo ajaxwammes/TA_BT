@@ -6,7 +6,6 @@ Technical indicators
 
 import numpy as np
 
-
 #MACD indicator
 '''function to calculate MACD: typical values 
 a(fast moving average) = 12; 
@@ -129,7 +128,7 @@ def trading_costs(DF,Capital):
     df["num_shares"] = np.round(Capital/df["Open"])
     df["trading_costs"] = np.where(0.005*df["num_shares"]>1,
                                    np.where(0.005*df["num_shares"]>0.01*Capital,
-                                            0.01*Capital*2,0.005*df["num_shares"]*2),2)/Capital
+                                            0.01*Capital*2,0.005*df["num_shares"]*2), 2)/Capital
     return df['trading_costs']
 
 
