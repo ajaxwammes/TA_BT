@@ -80,6 +80,8 @@ con_thread = threading.Thread(target=websocket_con, daemon=True)
 con_thread.start()
 time.sleep(1)  # some latency added to ensure that the connection is established
 
+
+
 # Financial products (CW, CE, EST, ToF, RE, PBF) - low risk
 tickers = ['AWK', 'BMI', 'CWT', 'CWCO', 'ECL', 'ERII', 'AQUA', 'PNR', 'SBS', 'SJW', 'TTEK', 'XYL',
            'CWST', 'CLH', 'DAR', 'HSC', 'RSG', 'VTNR', 'WCN', 'WM', 'HCCI', 'AQMS',
@@ -90,7 +92,7 @@ tickers = ['AWK', 'BMI', 'CWT', 'CWCO', 'ECL', 'ERII', 'AQUA', 'PNR', 'SBS', 'SJ
            ]
 
 # Capital per stock USD
-Capital = 250000
+Capital = 500000
 
 max_portfolio_size = 30
 
@@ -104,8 +106,8 @@ def data_in_df(tickers, ticker):
         try:
             df = dataDataframe(app, tickers, ticker)
         except Exception:
-            print('Need extra time to fetch data...')
-            time.sleep(10)
+            #print('Need extra time to fetch data...')
+            time.sleep(1)
             continue
         return df
 
@@ -113,7 +115,7 @@ def get_data():
     data = {}
     for ticker in tickers:
         print("Fetching data for", ticker)
-        histData(tickers.index(ticker), usTechStk(ticker), '1 Y', '10 mins')
+        histData(tickers.index(ticker), usTechStk(ticker), '7 Y', '10 mins')
         time.sleep(10)
         data[ticker] = data_in_df(tickers, ticker)
     return data
@@ -122,8 +124,12 @@ def RSI_variable(vol_df1, i):
     RSI_neutral = 75
     average_volatiliy = vol_df1['roll_mean'][i]
     current_volatility = vol_df1['mean'][i]
+    #if average_volatiliy > current_volatility * 1.05:
+    #    RSI = RSI_neutral - 3
     if average_volatiliy > current_volatility:
         RSI = RSI_neutral - 2.6
+    #elif average_volatiliy < current_volatility * 0.95:
+    #    RSI = RSI_neutral + 3
     elif average_volatiliy < current_volatility:
         RSI = RSI_neutral + 2.6
     else:
@@ -234,7 +240,7 @@ def strategy_df(ohlc_dict2):
     # assuming that there is equal amount of capital allocated/invested to each stock
     strategy_df["ret"] = strategy_df.mean(axis=1)
     # adjust to equal investment amount
-    strategy_df['ret'] = strategy_df['ret'] * (len(tickers) / max_portfolio_size)
+    strategy_df['ret'] = strategy_df['ret'] * (len(tickers) / min(len(tickers),max_portfolio_size))
     return strategy_df
 
 
