@@ -16,6 +16,7 @@ Trades:     581
 from ibapi.client import EClient
 from ibapi.wrapper import EWrapper
 from ibapi.contract import Contract
+import numpy as np
 import pandas as pd
 import threading
 import time
@@ -27,6 +28,7 @@ import sys
 
 
 account_value = []
+vol_series = []
 
 class TradeApp(EWrapper, EClient): 
     def __init__(self):
@@ -137,12 +139,26 @@ def capital(pos_df):
             pass
         return float(capital_ps)
 
-def buy_conditions(ord_df, investment_per_stock, df, ticker, quantity, trade_count, max_trades):
+def flex_RSI():
+    RSI_neutral = SHV.rsi_threshold
+    period_n = 60
+    current_volatility = np.array(vol_series[-len(SHV.ticker_symbols):]).mean()
+    average_volatility = np.array(vol_series[-(len(SHV.ticker_symbols)*period_n):]).mean()
+    if average_volatility > current_volatility:
+        RSI = RSI_neutral + 2.6
+    elif average_volatility < current_volatility:
+        RSI = RSI_neutral + 2.6
+    else:
+        RSI = RSI_neutral
+    return RSI
+
+
+def buy_conditions(ord_df, investment_per_stock, df, ticker, quantity, trade_count, max_trades, RSI):
     try:
         if df["macd"][-1] > df["signal"][-1] and \
         df["stoch"][-1] > SHV.stoch_threshold and \
         df["stoch"][-1] > df["stoch"][-2] and \
-        df["rsi"][-1] < features.RSI_variable(df) and \
+        df["rsi"][-1] < RSI and \
         df["b_band_width"][-1] > df["b_band_mean"][-1] and \
         features.analyst_ratings(ticker) < SHV.analyst_rating_threshold and \
         account_value[-1] > investment_per_stock and \
@@ -161,14 +177,14 @@ def buy(ticker, trade_count, df, quantity):
     limit_price = round(df['Close'][-1], 2)
     app.placeOrder(order_id, usTechStk(ticker), order_types.limitOrder("BUY", quantity, limit_price))
 
-def sell_conditions(ord_df, df, pos_df, ticker):
+def sell_conditions(ord_df, df, pos_df, ticker, RSI):
     orders = (ord_df[ord_df["Symbol"] == ticker]["OrderId"])
     try:
         if features.analyst_ratings(ticker) > SHV.analyst_rating_threshold and \
         len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'SELL')]) == 1:
             print('> selling', ticker, 'triggered by analyst ratings')
             sell(ord_df, pos_df, ticker, orders)
-        elif df["rsi"][-1] > features.RSI_variable(df) and \
+        elif df["rsi"][-1] > RSI and \
              df["b_band_width"][-1] < df["b_band_mean"][-1] and \
         len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'SELL')]) == 1:
             print(">>> selling", ticker, 'triggered by b_bands + RSI')
@@ -190,6 +206,8 @@ def sell(ord_df, pos_df, ticker, orders):
 
 def main():
     print('Scan:', features.current_time())
+    RSI = flex_RSI()
+    print('RSI score for scan:', RSI)
     app.data = {}
     app.pos_df = pd.DataFrame(columns=['Account', 'Symbol', 'SecType', 'Currency', 'Position', 'Avg cost'])
     app.order_df = pd.DataFrame(columns=['PermId', 'ClientId', 'OrderId', 'Account', 'Symbol', 'SecType',
@@ -211,9 +229,9 @@ def main():
         print("All money is invested. TG will only look for sell orders")
     ord_df.drop_duplicates(inplace=True, ignore_index=True)
     for ticker in tickers:
-        ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_trades, pos_df)
+        ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_trades, pos_df, RSI)
 
-def ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_trades, pos_df):
+def ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_trades, pos_df, RSI):
     print("scanning ticker.....", ticker)
     histData(tickers.index(ticker), usTechStk(ticker), '5 D', SHV.ticker_size_mins)
     #time.sleep(2)
@@ -228,17 +246,18 @@ def ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_
         df["b_band_mean"] = technical_indicators.bollBnd(df)["BB_mean"]
         df.dropna(inplace=True)
         quantity = int(investment_per_stock / df["Close"][-1])
+        vol_series.append(df['atr'][-1])
         if quantity == 0:
             pass
 
         # when you DON'T own the stock
         if ticker not in pos_df["Symbol"].tolist() or \
                 pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] == 0:
-            buy_conditions(ord_df, investment_per_stock, df, ticker, quantity, trade_count, max_trades)
+            buy_conditions(ord_df, investment_per_stock, df, ticker, quantity, trade_count, max_trades, RSI)
 
         # when you DO own the stock
         elif pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] > 0:
-            sell_conditions(ord_df, df, pos_df, ticker)
+            sell_conditions(ord_df, df, pos_df, ticker, RSI)
     else:
         print('>>!', ticker, 'does not give a DF')
         pass
