@@ -215,7 +215,7 @@ def main():
 
 def ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_trades, pos_df):
     print("scanning ticker.....", ticker)
-    histData(tickers.index(ticker), usTechStk(ticker), '10 D', SHV.ticker_size_mins)
+    histData(tickers.index(ticker), usTechStk(ticker), '5 D', SHV.ticker_size_mins)
     #time.sleep(2)
     df = data_in_df(tickers, ticker)
     if isinstance(df, pd.DataFrame):

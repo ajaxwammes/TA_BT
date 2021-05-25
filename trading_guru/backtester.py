@@ -90,7 +90,7 @@ tickers = ['AWK', 'BMI', 'CWT', 'CWCO', 'ECL', 'ERII', 'AQUA', 'PNR', 'SBS', 'SJ
            ]
 
 # Capital per stock USD
-Capital = 250000
+Capital = 500000
 
 max_portfolio_size = 30
 
@@ -104,8 +104,8 @@ def data_in_df(tickers, ticker):
         try:
             df = dataDataframe(app, tickers, ticker)
         except Exception:
-            print('Need extra time to fetch data...')
-            time.sleep(10)
+            #print('Need extra time to fetch data...')
+            time.sleep(1)
             continue
         return df
 
@@ -234,7 +234,7 @@ def strategy_df(ohlc_dict2):
     # assuming that there is equal amount of capital allocated/invested to each stock
     strategy_df["ret"] = strategy_df.mean(axis=1)
     # adjust to equal investment amount
-    strategy_df['ret'] = strategy_df['ret'] * (len(tickers) / max_portfolio_size)
+    strategy_df['ret'] = strategy_df['ret'] * (len(tickers) / min(len(tickers), max_portfolio_size))
     return strategy_df
 
 
