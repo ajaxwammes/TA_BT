@@ -73,6 +73,21 @@ def afterHours():
     else:
         return True
 
+def RSI_variable(df):
+    RSI_neutral = SHV.rsi_threshold
+    average_volatiliy = df['atr'][-80:].mean()
+    print('average_volatility', average_volatiliy)
+    current_volatility = df['atr'][-1]
+    print('current volatility:', current_volatility)
+    if average_volatiliy > current_volatility:
+        RSI = RSI_neutral - 1
+    elif average_volatiliy < current_volatility:
+        RSI = RSI_neutral + 1
+    else:
+        RSI = RSI_neutral
+    return RSI
+
+
 
 '''
 def limitorder_check(ord_df, ticker, df, quantity):

@@ -114,7 +114,7 @@ def data_in_df(tickers, ticker):
     counter = 1
     while True:
         try:
-            if counter > 35:
+            if counter > 31:
                 #print('Pass for now:', ticker)
                 return 0
             df = dataDataframe(app, tickers, ticker)
@@ -274,7 +274,7 @@ while True:
         sys.exit()
     if features.current_time_hour_min_sec() == '09:30:00':
         print("Market opens! May the stonks be with us")
-    if int(features.current_time_min()) in {9, 19, 29, 39, 49, 59} and \
+    if int(features.current_time_min()) in {14, 29, 44, 59} and \
     int(features.current_time_sec()) == 20:
         if features.afterHours() == False:
             main()
