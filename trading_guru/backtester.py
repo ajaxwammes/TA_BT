@@ -120,18 +120,14 @@ def get_data():
         data[ticker] = data_in_df(tickers, ticker)
     return data
 
-def RSI_variable(vol_df1, i):
+def RSI_variable(vol_dict, i, ticker):
     RSI_neutral = 75
-    average_volatiliy = vol_df1['roll_mean'][i]
-    current_volatility = vol_df1['mean'][i]
-    #if average_volatiliy > current_volatility * 1.05:
-    #    RSI = RSI_neutral - 3
-    if average_volatiliy > current_volatility:
-        RSI = RSI_neutral - 2.6
-    #elif average_volatiliy < current_volatility * 0.95:
-    #    RSI = RSI_neutral + 3
-    elif average_volatiliy < current_volatility:
+    rolling_volatility = vol_dict[ticker]['roll_mean'][i]
+    current_volatility = vol_dict[ticker]['atr'][i]
+    if current_volatility > rolling_volatility:
         RSI = RSI_neutral + 2.6
+    elif current_volatility < rolling_volatility:
+        RSI = RSI_neutral - 2.6
     else:
         RSI = RSI_neutral
     return RSI
@@ -164,15 +160,14 @@ def backtest_df(historicalData):
 def volatility_df(ohlc_dict):
     #get overall volatility dataframe
     print('get volatility DF')
-    vol_df = []
+    vol_dict = {}
     for ticker in ohlc_dict:
-        vol_df.append(ohlc_dict[ticker]['atr'])
-    vol_df1 = pd.DataFrame(vol_df)
-    vol_df1 = vol_df1.T
-    vol_df1['mean'] = vol_df1.mean(axis=1)
-    vol_df1['roll_mean'] = vol_df1['mean'].rolling(window=60, min_periods=1).mean()
-    vol_final = vol_df1[['mean', 'roll_mean']]
-    return vol_final
+        vol_dict[ticker] = []
+        vol_dict[ticker].append(ohlc_dict[ticker]['atr'])
+        vol_dict[ticker] = pd.DataFrame(vol_dict[ticker])
+        vol_dict[ticker] = vol_dict[ticker].T
+        vol_dict[ticker]['roll_mean'] = vol_dict[ticker]['atr'].rolling(window=60, min_periods=1).mean()
+    return vol_dict
 
 def backtester(ohlc_dict, vol_final):
     tickers_signal = {}
@@ -196,7 +191,7 @@ def backtester(ohlc_dict, vol_final):
                     tickers_ret[ticker].append(0)
                     if ohlc_dict[ticker]["macd"][i] > ohlc_dict[ticker]["signal"][i] and \
                     ohlc_dict[ticker]["stoch"][i] > 30 and \
-                    ohlc_dict[ticker]["rsi"][i] < RSI_variable(vol_final, i) and \
+                    ohlc_dict[ticker]["rsi"][i] < RSI_variable(vol_final, i, ticker) and \
                     ohlc_dict[ticker]["b_band_width"][i] < ohlc_dict[ticker]["b_band_mean"][i] and \
                     ohlc_dict[ticker]["stoch"][i] > ohlc_dict[ticker]["stoch"][i - 1] and \
                     open_positions <= max_portfolio_size:
@@ -207,7 +202,7 @@ def backtester(ohlc_dict, vol_final):
                         trade_data[ticker][trade_count[ticker]] = ([ohlc_dict[ticker]["Close"][i] + ohlc_dict[ticker]["trading_costs"][i]])
 
                 elif tickers_signal[ticker] == "Buy" and \
-                ohlc_dict[ticker]["rsi"][i] > RSI_variable(vol_final, i) and \
+                ohlc_dict[ticker]["rsi"][i] > RSI_variable(vol_final, i, ticker) and \
                 ohlc_dict[ticker]["b_band_width"][i] < ohlc_dict[ticker]["b_band_mean"][i]:
                     tickers_signal[ticker] = ""
                     trade_data[ticker][trade_count[ticker]].append(
