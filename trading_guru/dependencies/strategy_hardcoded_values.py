@@ -6,7 +6,7 @@ run_duration = secs_day*31
 stocks_n = 30
 
 #when an investment in a ticker is less  than this % of what it should be with the current capital, buy again
-rebuy_percentage = 0.7
+rebuy_percentage = 0.5
 
 #Change port to IB client you are using
 #TWS paper trading:7497

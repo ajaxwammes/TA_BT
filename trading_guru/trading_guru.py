@@ -149,14 +149,14 @@ def capital(pos_df):
 def buy_conditions(ord_df, investment_per_ticker, df, ticker, quantity, trade_count, max_trades):
     try:
         if df["macd"][-1] > df["signal"][-1] and \
-                df["stoch"][-1] > SHV.stoch_threshold and \
-                df["stoch"][-1] > df["stoch"][-2] and \
-                df["rsi"][-1] < features.RSI_variable(df) and \
-                df["b_band_width"][-1] > df["b_band_mean"][-1] and \
-                features.analyst_ratings(ticker) < SHV.analyst_rating_threshold and \
-                account_value[-1] > investment_per_ticker and \
-                len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'BUY')]) == 0 and \
-                trade_count < max_trades:
+        df["stoch"][-1] > SHV.stoch_threshold and \
+        df["stoch"][-1] > df["stoch"][-2] and \
+        df["rsi"][-1] < features.RSI_variable(df) and \
+        df["b_band_width"][-1] > df["b_band_mean"][-1] and \
+        features.analyst_ratings(ticker) < SHV.analyst_rating_threshold and \
+        account_value[-1] > investment_per_ticker and \
+        len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'BUY')]) == 0 and \
+        trade_count < max_trades:
             buy(ticker, trade_count, df, quantity)
     except Exception as e:
         print(ticker, e)
@@ -234,7 +234,6 @@ def ticker_scan(ticker, tickers, investment_per_ticker, ord_df, trade_count, max
     print("scanning ticker.....", ticker)
     histData(tickers.index(ticker), usTechStk(ticker), '5 D', SHV.ticker_size_mins)
     df = data_in_df(tickers, ticker)
-    print('Sum invested:', pos_df[pos_df["Symbol"] == ticker]["SumInvested"].sort_values(ascending=True).values[-1])
     if isinstance(df, pd.DataFrame):
         df["stoch"] = technical_indicators.stochOscltr(df)
         df["macd"] = technical_indicators.MACD(df)["MACD"]
@@ -248,12 +247,16 @@ def ticker_scan(ticker, tickers, investment_per_ticker, ord_df, trade_count, max
         if quantity == 0:
             pass
 
-        # when you DON'T own the stock
+        # when you DON'T own the stock or don't own enough of the stock
         if ticker not in pos_df["Symbol"].tolist() or \
         pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] == 0 or \
         pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] > 0 and \
         (pos_df[pos_df["Symbol"] == ticker]["SumInvested"].sort_values(ascending=True).values[-1] / investment_per_ticker) <= SHV.rebuy_percentage:
             buy_conditions(ord_df, investment_per_ticker, df, ticker, quantity, trade_count, max_trades)
+            if pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] > 0:
+                print('Buying more of', ticker, 'not enough invested currently')
+                print('ratio is:', (pos_df[pos_df["Symbol"] == ticker]["SumInvested"].sort_values(ascending=True).values[-1] / investment_per_ticker))
+
 
         # when you DO own the stock
         elif pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] > 0:
