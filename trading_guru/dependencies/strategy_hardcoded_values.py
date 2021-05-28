@@ -2,7 +2,7 @@
 secs_day = 86400
 run_duration = secs_day*31
 
-#length of original portfolio
+#length of original portfolio. This needs to be max 0.5*len(tickers), else money can be left uninvested
 stocks_n = 25
 
 #when an investment in a ticker is less  than this % of what it should be with the current capital, buy again
@@ -19,7 +19,7 @@ port = 4002
 #Financial products (CW, CE, EST, ToF, RE, PBF) - low risk
 ticker_symbols = ['AWK', 'BMI', 'CWT', 'CWCO', 'ECL', 'ERII', 'AQUA', 'PNR', 'SBS', 'SJW', 'TTEK', 'XYL', 'ECOL',
            'CWST', 'CLH', 'DAR', 'HSC', 'RSG', 'VTNR', 'WCN', 'WM', 'HCCI', 'AQMS', 'CVA',
-           'AMRC', 'AMSC', 'AMAT', 'CGRN', 'WLDN', 'ITRI', 'ASPN',
+           'AMRC', 'AMAT', 'CGRN', 'WLDN', 'ITRI', 'ASPN', 'TT',
            'APTV', 'FUV', 'BEEM', 'NIU', 'BLDP', 'BLNK', 'NIO',
            'AMTX', 'BEP', 'NOVA', 'HASI', 'EBR', 'CSIQ', 'AQN',
            'BYND', 'TTCF', 'INGR'

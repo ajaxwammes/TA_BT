@@ -26,7 +26,7 @@ from dependencies import features
 import sys
 
 account_value = []
-
+duration = []
 
 class TradeApp(EWrapper, EClient):
     def __init__(self):
@@ -118,7 +118,7 @@ def data_in_df(tickers, ticker):
     counter = 1
     while True:
         try:
-            if counter > 35:
+            if counter > 44:
                 # print('Pass for now:', ticker)
                 return 0
             df = dataDataframe(app, tickers, ticker)
@@ -171,7 +171,6 @@ def buy(ticker, trade_count, df, quantity):
     limit_price = round(df['Close'][-1], 2)
     app.placeOrder(order_id, usTechStk(ticker), order_types.limitOrder("BUY", quantity, limit_price))
 
-
 def sell_conditions(ord_df, df, pos_df, ticker):
     orders = (ord_df[ord_df["Symbol"] == ticker]["OrderId"])
     try:
@@ -213,14 +212,12 @@ def main():
     pos_df = app.pos_df
     pos_df.drop_duplicates(inplace=True, ignore_index=True)
     pos_df['SumInvested'] = pos_df['Position'] * pos_df['Avg cost']
-    print(pos_df)
     tickers = features.what_tickers(app)
     app.reqOpenOrders()
     ord_df = app.order_df
     ord_df.drop_duplicates(inplace=True, ignore_index=True)
     print('Account value:', round(account_value[-1], 2))
     investment_per_ticker = capital(pos_df)
-    print('investment per tick:', investment_per_ticker)
     max_trades = account_value[-1] / investment_per_ticker
     trade_count = 0
     if account_value[-1] < investment_per_ticker:
@@ -233,6 +230,7 @@ def main():
 def ticker_scan(ticker, tickers, investment_per_ticker, ord_df, trade_count, max_trades, pos_df):
     print("scanning ticker.....", ticker)
     histData(tickers.index(ticker), usTechStk(ticker), '5 D', SHV.ticker_size_mins)
+    time.sleep(1.5)
     df = data_in_df(tickers, ticker)
     if isinstance(df, pd.DataFrame):
         df["stoch"] = technical_indicators.stochOscltr(df)
@@ -253,10 +251,10 @@ def ticker_scan(ticker, tickers, investment_per_ticker, ord_df, trade_count, max
         pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] > 0 and \
         (pos_df[pos_df["Symbol"] == ticker]["SumInvested"].sort_values(ascending=True).values[-1] / investment_per_ticker) <= SHV.rebuy_percentage:
             buy_conditions(ord_df, investment_per_ticker, df, ticker, quantity, trade_count, max_trades)
-            if pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] > 0:
-                print('Buying more of', ticker, 'not enough invested currently')
-                print('ratio is:', (pos_df[pos_df["Symbol"] == ticker]["SumInvested"].sort_values(ascending=True).values[-1] / investment_per_ticker))
-
+            try:
+                print('Invested to threshold ratio:', (pos_df[pos_df["Symbol"] == ticker]["SumInvested"].sort_values(ascending=True).values[-1] / investment_per_ticker))
+            except IndexError:
+                pass
 
         # when you DO own the stock
         elif pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] > 0:
@@ -273,18 +271,26 @@ con_thread.start()
 
 # Running the code + smart sleep
 while True:
+    try:
+        corr = int(duration[-1] / 60)
+        corr_sec = int(duration[-1]) % 60
+    except Exception:
+        corr = 1
+        corr_sec = 40
     if features.current_time_hour_min_sec() == '03:00:00':
         print("Another day with diamond hands! Now going to reboot")
         sys.exit()
     if features.current_time_hour_min_sec() == '09:30:00':
         print("Market opens! May the stonks be with us")
-    if int(features.current_time_min()) in {9, 19, 29, 39, 49, 59} and \
-            int(features.current_time_sec()) == 20:
+    if int(features.current_time_min()) in {9-corr, 19-corr, 29-corr, 39-corr, 49-corr, 59-corr} and \
+            int(features.current_time_sec()) == 60 - corr_sec:
         if features.afterHours() == False:
+            start_time = time.time()
             main()
             print('>>>>>>>>>>>>>> Check done at', features.current_time_hour_min_sec(),
-                  'now going to sleep <<<<<<<<<<<<<<')
+                  'in', "%s seconds" % (time.time() - start_time), '<<<<<<<<<<<<<<')
             print('  ')
+            duration.append(int(time.time() - start_time))
         else:
             print('Market is closed:', features.current_time_hour_min_sec())
             time.sleep(1)
