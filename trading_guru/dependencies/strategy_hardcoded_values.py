@@ -3,7 +3,7 @@ secs_day = 86400
 run_duration = secs_day*31
 
 #length of original portfolio
-stocks_n = 30
+stocks_n = 25
 
 #when an investment in a ticker is less  than this % of what it should be with the current capital, buy again
 rebuy_percentage = 0.5
@@ -17,12 +17,12 @@ port = 4002
 
 """ STRATEGY """
 #Financial products (CW, CE, EST, ToF, RE, PBF) - low risk
-ticker_symbols = ['AWK', 'BMI', 'CWT', 'CWCO', 'ECL', 'ERII', 'AQUA', 'PNR', 'SBS', 'SJW', 'TTEK', 'XYL',
-           'CWST', 'CLH', 'DAR', 'HSC', 'RSG', 'VTNR', 'WCN', 'WM', 'HCCI', 'AQMS',
-           'AMRC', 'AMSC', 'AMAT', 'CGRN', 'WLDN', 'ITRI',
-           'APTV', 'FUV', 'BEEM', 'NIU', 'BLDP', 'BLNK',
-           'AMTX', 'BEP', 'NOVA', 'HASI', 'EBR', 'DQ',
-           'BYND', 'TTCF'
+ticker_symbols = ['AWK', 'BMI', 'CWT', 'CWCO', 'ECL', 'ERII', 'AQUA', 'PNR', 'SBS', 'SJW', 'TTEK', 'XYL', 'ECOL',
+           'CWST', 'CLH', 'DAR', 'HSC', 'RSG', 'VTNR', 'WCN', 'WM', 'HCCI', 'AQMS', 'CVA',
+           'AMRC', 'AMSC', 'AMAT', 'CGRN', 'WLDN', 'ITRI', 'ASPN',
+           'APTV', 'FUV', 'BEEM', 'NIU', 'BLDP', 'BLNK', 'NIO',
+           'AMTX', 'BEP', 'NOVA', 'HASI', 'EBR', 'CSIQ', 'AQN',
+           'BYND', 'TTCF', 'INGR'
             ]
 
 

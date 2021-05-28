@@ -83,18 +83,18 @@ time.sleep(1)  # some latency added to ensure that the connection is established
 
 
 # Financial products (CW, CE, EST, ToF, RE, PBF) - low risk
-tickers = ['AWK', 'BMI', 'CWT', 'CWCO', 'ECL', 'ERII', 'AQUA', 'PNR', 'SBS', 'SJW', 'TTEK', 'XYL',
-           'CWST', 'CLH', 'DAR', 'HSC', 'RSG', 'VTNR', 'WCN', 'WM', 'HCCI', 'AQMS',
-           'AMRC', 'AMSC', 'AMAT', 'CGRN', 'WLDN', 'ITRI',
-           'APTV', 'FUV', 'BEEM', 'NIU', 'BLDP',
-            'BEP', 'NOVA', 'HASI', 'EBR', 'CSIQ',
-           'BYND', 'TTCF'
-           ]
+tickers = ['AWK', 'BMI', 'CWT', 'CWCO', 'ECL', 'ERII', 'AQUA', 'PNR', 'SBS', 'SJW', 'TTEK', 'XYL', 'ECOL',
+           'CWST', 'CLH', 'DAR', 'HSC', 'RSG', 'VTNR', 'WCN', 'WM', 'HCCI', 'AQMS', 'CVA',
+           'AMRC', 'AMSC', 'AMAT', 'CGRN', 'WLDN', 'ITRI', 'ASPN',
+           'APTV', 'FUV', 'BEEM', 'NIU', 'BLDP', 'BLNK', 'NIO',
+           'AMTX', 'BEP', 'NOVA', 'HASI', 'EBR', 'CSIQ', 'AQN',
+           'BYND', 'TTCF', 'INGR'
+            ]
 
 # Capital per stock USD
 Capital = 500000
 
-max_portfolio_size = 40
+max_portfolio_size = len(tickers)
 
 def dataDataframe(TradeApp_obj, symbols, symbol):
     df = pd.DataFrame(TradeApp_obj.data[symbols.index(symbol)])
