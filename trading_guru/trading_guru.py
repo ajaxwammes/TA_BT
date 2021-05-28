@@ -130,22 +130,23 @@ def data_in_df(tickers, ticker):
         return df
 
 
-# the capital per stock
+# the capital per ticker
 def capital(pos_df):
     capital_ps = None
     while capital_ps is None:
+        #try block for when account_value is in yet
         try:
             money_invested = pos_df['Position'] * pos_df['Avg cost']
             money_invested_sum = sum(money_invested)
             print('Money invested:', round(money_invested_sum, 2))
             total_money = account_value[-1] + money_invested_sum
             capital_ps = total_money / SHV.stocks_n
-        except:
+        except Exception:
             pass
         return float(capital_ps)
 
 
-def buy_conditions(ord_df, investment_per_stock, df, ticker, quantity, trade_count, max_trades):
+def buy_conditions(ord_df, investment_per_ticker, df, ticker, quantity, trade_count, max_trades):
     try:
         if df["macd"][-1] > df["signal"][-1] and \
                 df["stoch"][-1] > SHV.stoch_threshold and \
@@ -153,7 +154,7 @@ def buy_conditions(ord_df, investment_per_stock, df, ticker, quantity, trade_cou
                 df["rsi"][-1] < features.RSI_variable(df) and \
                 df["b_band_width"][-1] > df["b_band_mean"][-1] and \
                 features.analyst_ratings(ticker) < SHV.analyst_rating_threshold and \
-                account_value[-1] > investment_per_stock and \
+                account_value[-1] > investment_per_ticker and \
                 len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'BUY')]) == 0 and \
                 trade_count < max_trades:
             buy(ticker, trade_count, df, quantity)
@@ -211,26 +212,29 @@ def main():
     time.sleep(3)
     pos_df = app.pos_df
     pos_df.drop_duplicates(inplace=True, ignore_index=True)
+    pos_df['SumInvested'] = pos_df['Position'] * pos_df['Avg cost']
+    print(pos_df)
     tickers = features.what_tickers(app)
     app.reqOpenOrders()
     ord_df = app.order_df
     ord_df.drop_duplicates(inplace=True, ignore_index=True)
     print('Account value:', round(account_value[-1], 2))
-    investment_per_stock = capital(pos_df)
-    max_trades = account_value[-1] / investment_per_stock
+    investment_per_ticker = capital(pos_df)
+    print('investment per tick:', investment_per_ticker)
+    max_trades = account_value[-1] / investment_per_ticker
     trade_count = 0
-    if account_value[-1] < investment_per_stock:
+    if account_value[-1] < investment_per_ticker:
         print("All money is invested. TG will only look for sell orders")
     ord_df.drop_duplicates(inplace=True, ignore_index=True)
     for ticker in tickers:
-        ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_trades, pos_df)
+        ticker_scan(ticker, tickers, investment_per_ticker, ord_df, trade_count, max_trades, pos_df)
 
 
-def ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_trades, pos_df):
+def ticker_scan(ticker, tickers, investment_per_ticker, ord_df, trade_count, max_trades, pos_df):
     print("scanning ticker.....", ticker)
     histData(tickers.index(ticker), usTechStk(ticker), '5 D', SHV.ticker_size_mins)
-    # time.sleep(2)
     df = data_in_df(tickers, ticker)
+    print('Sum invested:', pos_df[pos_df["Symbol"] == ticker]["SumInvested"].sort_values(ascending=True).values[-1])
     if isinstance(df, pd.DataFrame):
         df["stoch"] = technical_indicators.stochOscltr(df)
         df["macd"] = technical_indicators.MACD(df)["MACD"]
@@ -240,14 +244,16 @@ def ticker_scan(ticker, tickers, investment_per_stock, ord_df, trade_count, max_
         df["b_band_width"] = technical_indicators.bollBnd(df)["BB_width"]
         df["b_band_mean"] = technical_indicators.bollBnd(df)["BB_mean"]
         df.dropna(inplace=True)
-        quantity = int(investment_per_stock / df["Close"][-1])
+        quantity = int(investment_per_ticker / df["Close"][-1])
         if quantity == 0:
             pass
 
         # when you DON'T own the stock
         if ticker not in pos_df["Symbol"].tolist() or \
-                pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] == 0:
-            buy_conditions(ord_df, investment_per_stock, df, ticker, quantity, trade_count, max_trades)
+        pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] == 0 or \
+        pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] > 0 and \
+        (pos_df[pos_df["Symbol"] == ticker]["SumInvested"].sort_values(ascending=True).values[-1] / investment_per_ticker) <= SHV.rebuy_percentage:
+            buy_conditions(ord_df, investment_per_ticker, df, ticker, quantity, trade_count, max_trades)
 
         # when you DO own the stock
         elif pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1] > 0:

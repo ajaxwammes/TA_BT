@@ -87,14 +87,14 @@ tickers = ['AWK', 'BMI', 'CWT', 'CWCO', 'ECL', 'ERII', 'AQUA', 'PNR', 'SBS', 'SJ
            'CWST', 'CLH', 'DAR', 'HSC', 'RSG', 'VTNR', 'WCN', 'WM', 'HCCI', 'AQMS',
            'AMRC', 'AMSC', 'AMAT', 'CGRN', 'WLDN', 'ITRI',
            'APTV', 'FUV', 'BEEM', 'NIU', 'BLDP',
-            'BEP', 'NOVA', 'HASI', 'EBR', 'DQ',
+            'BEP', 'NOVA', 'HASI', 'EBR', 'CSIQ',
            'BYND', 'TTCF'
            ]
 
 # Capital per stock USD
 Capital = 500000
 
-max_portfolio_size = 30
+max_portfolio_size = 40
 
 def dataDataframe(TradeApp_obj, symbols, symbol):
     df = pd.DataFrame(TradeApp_obj.data[symbols.index(symbol)])
@@ -115,19 +115,19 @@ def get_data():
     data = {}
     for ticker in tickers:
         print("Fetching data for", ticker)
-        histData(tickers.index(ticker), usTechStk(ticker), '7 Y', '10 mins')
+        histData(tickers.index(ticker), usTechStk(ticker), '2 Y', '10 mins')
         time.sleep(10)
         data[ticker] = data_in_df(tickers, ticker)
     return data
 
 def RSI_variable(vol_dict, i, ticker):
-    RSI_neutral = 75
+    RSI_neutral = 80
     rolling_volatility = vol_dict[ticker]['roll_mean'][i]
     current_volatility = vol_dict[ticker]['atr'][i]
     if current_volatility > rolling_volatility:
-        RSI = RSI_neutral + 2.6
+        RSI = RSI_neutral + 2.5
     elif current_volatility < rolling_volatility:
-        RSI = RSI_neutral - 2.6
+        RSI = RSI_neutral - 2.5
     else:
         RSI = RSI_neutral
     return RSI
@@ -235,7 +235,7 @@ def strategy_df(ohlc_dict2):
     # assuming that there is equal amount of capital allocated/invested to each stock
     strategy_df["ret"] = strategy_df.mean(axis=1)
     # adjust to equal investment amount
-    strategy_df['ret'] = strategy_df['ret'] * (len(tickers) / min(len(tickers),max_portfolio_size))
+    strategy_df['ret'] = strategy_df['ret'] * (len(tickers) / min(len(tickers), max_portfolio_size))
     return strategy_df
 
 
