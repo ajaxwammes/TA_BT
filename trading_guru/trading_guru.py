@@ -249,7 +249,8 @@ def ticker_scan(ticker, tickers, investment_per_ticker, ord_df, trade_count, max
         (pos_df[pos_df["Symbol"] == ticker]["SumInvested"].sort_values(ascending=True).values[-1] / investment_per_ticker) <= SHV.rebuy_percentage:
             buy_conditions(ord_df, investment_per_ticker, df, ticker, quantity, trade_count, max_trades)
             try:
-                print('Invested to threshold ratio:', (pos_df[pos_df["Symbol"] == ticker]["SumInvested"].sort_values(ascending=True).values[-1] / investment_per_ticker))
+                if (pos_df[pos_df["Symbol"] == ticker]["SumInvested"].sort_values(ascending=True).values[-1] / investment_per_ticker) > 0:
+                    print('Scanning to buy more - invested to threshold ratio:', (pos_df[pos_df["Symbol"] == ticker]["SumInvested"].sort_values(ascending=True).values[-1] / investment_per_ticker))
             except IndexError:
                 pass
 

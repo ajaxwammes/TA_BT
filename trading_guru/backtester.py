@@ -94,7 +94,7 @@ tickers = ['AWK', 'BMI', 'CWT', 'CWCO', 'ECL', 'ERII', 'AQUA', 'PNR', 'SBS', 'SJ
 # Capital per stock USD
 Capital = 500000
 
-max_portfolio_size = len(tickers)
+max_portfolio_size = 30
 
 def dataDataframe(TradeApp_obj, symbols, symbol):
     df = pd.DataFrame(TradeApp_obj.data[symbols.index(symbol)])
