@@ -121,7 +121,7 @@ def get_data():
     return data
 
 def RSI_variable(vol_dict, i, ticker):
-    RSI_neutral = 80
+    RSI_neutral = 82
     rolling_volatility = vol_dict[ticker]['roll_mean'][i]
     current_volatility = vol_dict[ticker]['atr'][i]
     if current_volatility > rolling_volatility:

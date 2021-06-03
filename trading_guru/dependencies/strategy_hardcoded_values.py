@@ -35,8 +35,8 @@ ticker_size_mins = str(ticker_size) + ' ' + 'mins'
 #the threshold value for the stochastic indicator
 stoch_threshold = 30
 
-#RSI base value (might differ caused by ATR)
-rsi_threshold = 65
+#RSI base value (might differ caused by flex)
+rsi_threshold = 80
 
 #analyst rating threshold, after which to sell a stock (1 best - 5 worst)
 analyst_rating_threshold = 2.8

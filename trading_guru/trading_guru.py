@@ -134,7 +134,7 @@ def data_in_df(tickers, ticker):
 def capital(pos_df):
     capital_ps = None
     while capital_ps is None:
-        #try block for when account_value is in yet
+        #try block for when account_value is not available
         try:
             money_invested = pos_df['Position'] * pos_df['Avg cost']
             money_invested_sum = sum(money_invested)
@@ -171,33 +171,30 @@ def buy(ticker, trade_count, df, quantity):
     limit_price = round(df['Close'][-1], 2)
     app.placeOrder(order_id, usTechStk(ticker), order_types.limitOrder("BUY", quantity, limit_price))
 
+
 def sell_conditions(ord_df, df, pos_df, ticker):
-    orders = (ord_df[ord_df["Symbol"] == ticker]["OrderId"])
     try:
         if features.analyst_ratings(ticker) > SHV.analyst_rating_threshold and \
-                len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'SELL')]) == 1:
+        len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'SELL')]) == 0:
             print('> selling', ticker, 'triggered by analyst ratings')
-            sell(ord_df, pos_df, ticker, orders)
+            sell(pos_df, ticker)
         elif df["rsi"][-1] > features.RSI_variable(df) and \
-                df["b_band_width"][-1] < df["b_band_mean"][-1] and \
-                len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'SELL')]) == 1:
+        df["b_band_width"][-1] < df["b_band_mean"][-1] and \
+        len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'SELL')]) == 0:
             print(">>> selling", ticker, 'triggered by b_bands + RSI')
-            sell(ord_df, pos_df, ticker, orders)
+            sell(pos_df, ticker)
         else:
             print('keep position for', ticker)
     except Exception as e:
         print(ticker, e)
 
 
-def sell(ord_df, pos_df, ticker, orders):
+def sell(pos_df, ticker):
     old_quantity = pos_df[pos_df["Symbol"] == ticker]["Position"].sort_values(ascending=True).values[-1]
     app.reqIds(-1)
     time.sleep(2)
     order_id = app.nextValidOrderId
     app.placeOrder(order_id, usTechStk(ticker), order_types.marketOrder("SELL", old_quantity))
-    if len(orders) > 0:
-        ord_id = ord_df[ord_df["Symbol"] == ticker]["OrderId"].sort_values(ascending=True).values[-1]
-        app.cancelOrder(ord_id)
 
 
 def main():
