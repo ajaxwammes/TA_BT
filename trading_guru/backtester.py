@@ -21,8 +21,13 @@ import numpy as np
 from copy import deepcopy
 from trading_guru.dependencies import technical_indicators as TI
 from trading_guru.features_backtester import KPIs_Long as KL, KPIs_IntraDay as KI
+import matplotlib
+matplotlib.use('TkAgg')
 
 pd.options.mode.chained_assignment = None  # default='warn'
+
+#historical data 05.06.2021
+#historicalData = np.load('historicalData.npy', allow_pickle=True).item()
 
 
 class TradeApp(EWrapper, EClient):
@@ -81,7 +86,6 @@ con_thread.start()
 time.sleep(1)  # some latency added to ensure that the connection is established
 
 
-
 # Financial products (CW, CE, EST, ToF, RE, PBF) - low risk
 tickers = ['AWK', 'BMI', 'CWT', 'CWCO', 'ECL', 'ERII', 'AQUA', 'PNR', 'SBS', 'SJW', 'TTEK', 'XYL', 'ECOL',
            'CWST', 'CLH', 'DAR', 'HSC', 'RSG', 'VTNR', 'WCN', 'WM', 'HCCI', 'AQMS', 'CVA',
@@ -93,8 +97,7 @@ tickers = ['AWK', 'BMI', 'CWT', 'CWCO', 'ECL', 'ERII', 'AQUA', 'PNR', 'SBS', 'SJ
 
 # Capital per stock USD
 Capital = 500000
-
-max_portfolio_size = 30
+max_portfolio_size = len(tickers)
 
 def dataDataframe(TradeApp_obj, symbols, symbol):
     df = pd.DataFrame(TradeApp_obj.data[symbols.index(symbol)])
@@ -120,17 +123,20 @@ def get_data():
         data[ticker] = data_in_df(tickers, ticker)
     return data
 
-def RSI_variable(vol_dict, i, ticker):
-    RSI_neutral = 82
-    rolling_volatility = vol_dict[ticker]['roll_mean'][i]
-    current_volatility = vol_dict[ticker]['atr'][i]
-    if current_volatility > rolling_volatility:
-        RSI = RSI_neutral + 2.5
-    elif current_volatility < rolling_volatility:
-        RSI = RSI_neutral - 2.5
+def stoch_variable(vol_dict, i, ticker, ohlc_dict):
+    stoch_neutral = 99
+    if ohlc_dict[ticker]["Volume"][i] < 30:
+        rolling_volatility = vol_dict[ticker]['roll_mean'][i]
+        current_volatility = vol_dict[ticker]['atr'][i]
+        if current_volatility > rolling_volatility:
+            Stoch = stoch_neutral + 1
+        elif current_volatility < rolling_volatility:
+            Stoch = stoch_neutral - 1
+        else:
+            Stoch = stoch_neutral
     else:
-        RSI = RSI_neutral
-    return RSI
+        Stoch = stoch_neutral
+    return Stoch
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Backtesting <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -190,8 +196,7 @@ def backtester(ohlc_dict, vol_final):
                 if tickers_signal[ticker] == "":
                     tickers_ret[ticker].append(0)
                     if ohlc_dict[ticker]["macd"][i] > ohlc_dict[ticker]["signal"][i] and \
-                    ohlc_dict[ticker]["stoch"][i] > 30 and \
-                    ohlc_dict[ticker]["rsi"][i] < RSI_variable(vol_final, i, ticker) and \
+                    ohlc_dict[ticker]["stoch"][i] < stoch_variable(vol_final, i, ticker, ohlc_dict) and \
                     ohlc_dict[ticker]["b_band_width"][i] < ohlc_dict[ticker]["b_band_mean"][i] and \
                     ohlc_dict[ticker]["stoch"][i] > ohlc_dict[ticker]["stoch"][i - 1] and \
                     open_positions <= max_portfolio_size:
@@ -202,7 +207,7 @@ def backtester(ohlc_dict, vol_final):
                         trade_data[ticker][trade_count[ticker]] = ([ohlc_dict[ticker]["Close"][i] + ohlc_dict[ticker]["trading_costs"][i]])
 
                 elif tickers_signal[ticker] == "Buy" and \
-                ohlc_dict[ticker]["rsi"][i] > RSI_variable(vol_final, i, ticker) and \
+                ohlc_dict[ticker]["stoch"][i] > stoch_variable(vol_final, i, ticker, ohlc_dict) and \
                 ohlc_dict[ticker]["b_band_width"][i] < ohlc_dict[ticker]["b_band_mean"][i]:
                     tickers_signal[ticker] = ""
                     trade_data[ticker][trade_count[ticker]].append(
@@ -245,20 +250,29 @@ def strategy_df(ohlc_dict2):
 def intraday_ticker(trade_data):
     trade_df = {}
     for ticker in historicalData:
-        trade_df[ticker] = pd.DataFrame(trade_data[ticker]).T
-        trade_df[ticker].columns = ["trade_entry_pr", "trade_exit_pr"]
-        trade_df[ticker]["return"] = (trade_df[ticker]["trade_exit_pr"] / trade_df[ticker]["trade_entry_pr"])
+        try:
+            trade_df[ticker] = pd.DataFrame(trade_data[ticker]).T
+            trade_df[ticker].columns = ["trade_entry_pr", "trade_exit_pr"]
+            trade_df[ticker]["return"] = (trade_df[ticker]["trade_exit_pr"] / trade_df[ticker]["trade_entry_pr"])
+        except Exception:
+            print('no trades made for', ticker)
 
     win_rate = {}
     mean_ret_pt = {}
     mean_ret_pwt = {}
     mean_ret_plt = {}
     for ticker in historicalData:
-        print("calculating intraday KPIs for ", ticker)
-        win_rate[ticker] = KI.winRate(trade_df[ticker])
-        mean_ret_pt[ticker] = KI.meanretpertrade(trade_df[ticker])
-        mean_ret_pwt[ticker] = KI.meanretwintrade(trade_df[ticker])
-        mean_ret_plt[ticker] = KI.meanretlostrade(trade_df[ticker])
+        try:
+            print("calculating intraday KPIs for ", ticker)
+            win_rate[ticker] = KI.winRate(trade_df[ticker])
+            mean_ret_pt[ticker] = KI.meanretpertrade(trade_df[ticker])
+            mean_ret_pwt[ticker] = KI.meanretwintrade(trade_df[ticker])
+            mean_ret_plt[ticker] = KI.meanretlostrade(trade_df[ticker])
+        except Exception:
+            win_rate[ticker] = 0
+            mean_ret_pt[ticker] = 0
+            mean_ret_pwt[ticker] = 0
+            mean_ret_plt[ticker] = 0
 
     KPI_ID_df = pd.DataFrame([win_rate, mean_ret_pt, mean_ret_pwt, mean_ret_plt],
                              index=["Win Rate", "MR Per Trade", "MR Per WT", "MR Per LT"])

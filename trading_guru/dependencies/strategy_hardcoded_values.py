@@ -8,6 +8,9 @@ stocks_n = 25
 #when an investment in a ticker is less  than this % of what it should be with the current capital, buy again
 rebuy_percentage = 0.5
 
+#the threshold for when a stock is considered low cap
+low_cap_threshold = 50
+
 #Change port to IB client you are using
 #TWS paper trading:7497
 #TWS money trading:7496
@@ -33,7 +36,7 @@ ticker_size = 10
 ticker_size_mins = str(ticker_size) + ' ' + 'mins'
 
 #the threshold value for the stochastic indicator
-stoch_threshold = 30
+stoch_threshold = 99
 
 #RSI base value (might differ caused by flex)
 rsi_threshold = 80

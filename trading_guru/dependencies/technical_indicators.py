@@ -104,16 +104,17 @@ def adx(DF,n=60):
     
 #Stochastic Oscillator: over/undersold: >80 overbought and <20 oversold 
 # a=looking period, b=moving average window for %D
-def stochOscltr(DF,a=60,b=9):
+def stochOscltr(DF,a=14,b=3):
     """function to calculate Stochastics
        a = lookback period
        b = moving average window for %D"""
     df = DF.copy()
-    df['C-L'] = df['Close'] - df['Low'].rolling(a).min()
-    df['H-L'] = df['High'].rolling(a).max() - df['Low'].rolling(a).min()
-    df['%K'] = df['C-L']/df['H-L']*100
-    #df['%D'] = df['%K'].ewm(span=b,min_periods=b).mean()
-    return df['%K'].rolling(b).mean()
+    df['Max_high'] = df['High'].rolling(a).max()
+    df['Min_low'] = df['Low'].rolling(a).min()
+    df['%K'] = (df['Close']-df['Max_high']) / (df['Max_high']-df['Min_low']) * 100
+    df['%D'] = df['%K'].ewm(span=b, min_periods=1).mean()
+    print(df.tail)
+    return df['%D']
 
 
 #Calculate slippage Indian style

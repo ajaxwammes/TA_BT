@@ -149,9 +149,8 @@ def capital(pos_df):
 def buy_conditions(ord_df, investment_per_ticker, df, ticker, quantity, trade_count, max_trades):
     try:
         if df["macd"][-1] > df["signal"][-1] and \
-        df["stoch"][-1] > SHV.stoch_threshold and \
         df["stoch"][-1] > df["stoch"][-2] and \
-        df["rsi"][-1] < features.RSI_variable(df) and \
+        df["stoch"][-1] < features.stoch_variable(df) and \
         df["b_band_width"][-1] > df["b_band_mean"][-1] and \
         features.analyst_ratings(ticker) < SHV.analyst_rating_threshold and \
         account_value[-1] > investment_per_ticker and \
@@ -178,10 +177,10 @@ def sell_conditions(ord_df, df, pos_df, ticker):
         len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'SELL')]) == 0:
             print('> selling', ticker, 'triggered by analyst ratings')
             sell(pos_df, ticker)
-        elif df["rsi"][-1] > features.RSI_variable(df) and \
+        elif df["stoch"][-1] > features.stoch_variable(df) and \
         df["b_band_width"][-1] < df["b_band_mean"][-1] and \
         len(ord_df[(ord_df["Symbol"] == ticker) & (ord_df["Action"] == 'SELL')]) == 0:
-            print(">>> selling", ticker, 'triggered by b_bands + RSI')
+            print(">>> selling", ticker, 'triggered by b_bands + stoch')
             sell(pos_df, ticker)
         else:
             print('keep position for', ticker)
